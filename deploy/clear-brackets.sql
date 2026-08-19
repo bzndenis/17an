@@ -1,0 +1,6 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE match_participants;
+TRUNCATE match_results;
+TRUNCATE `matches`;
+TRUNCATE rounds;
+SET FOREIGN_KEY_CHECKS=1;

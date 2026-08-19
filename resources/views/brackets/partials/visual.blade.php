@@ -19,7 +19,6 @@
 @else
     @php
         $totalRounds = $rounds->count();
-        $firstRoundCount = $rounds->first()->matches->count();
         $totalMatches = $rounds->sum(fn ($r) => $r->matches->count());
         $finishedMatches = $rounds->sum(fn ($r) => $r->matches->filter(fn ($m) => $m->status->value === 'finished')->count());
         $liveMatches = $rounds->sum(fn ($r) => $r->matches->filter(fn ($m) => $m->status->value === 'live')->count());
@@ -28,28 +27,77 @@
         $finalMatch = $rounds->last()?->matches->first();
         $champion = $finalMatch?->matchParticipants->firstWhere('is_winner', true)?->participant;
 
-        // Konstanta layout — harus sinkron dengan CSS .bracket-match { height }
         $matchHeight = 132;
         $slotHeight = 168;
         $connectorWidth = 48;
         $columnWidth = 280;
         $treePadding = 32;
 
-        $treeHeight = ($firstRoundCount - 1) * $slotHeight + $matchHeight + $treePadding;
+        // Anchor round = round with most matches (usually the earliest full round)
+        $anchorRoundIndex = 0;
+        $maxMatches = 0;
+        foreach ($rounds as $ri => $r) {
+            if ($r->matches->count() > $maxMatches) {
+                $maxMatches = $r->matches->count();
+                $anchorRoundIndex = $ri;
+            }
+        }
 
-        $slotTop = function (int $roundIndex, int $matchIndex) use ($slotHeight): float {
-            return ($matchIndex * pow(2, $roundIndex + 1) + pow(2, $roundIndex) - 1) / 2 * $slotHeight;
-        };
+        $treeHeight = ($maxMatches - 1) * $slotHeight + $matchHeight + $treePadding;
 
-        $slotCenter = fn (int $roundIndex, int $matchIndex): float => $slotTop($roundIndex, $matchIndex) + $matchHeight / 2;
+        // Build match ID → position map using next_match_id relationships
+        $matchPositions = []; // match_id => top position
 
-        // Posisi semua slot untuk SVG connector
+        // Position anchor round evenly
+        $anchorRound = $rounds[$anchorRoundIndex];
+        foreach ($anchorRound->matches as $mi => $match) {
+            $top = $mi * $slotHeight;
+            $matchPositions[$match->id] = $top;
+        }
+
+        // Position rounds after anchor (each match centered between its two feeder matches)
+        for ($ri = $anchorRoundIndex + 1; $ri < $totalRounds; $ri++) {
+            $prevRound = $rounds[$ri - 1];
+            foreach ($rounds[$ri]->matches as $mi => $match) {
+                $feeders = $prevRound->matches->filter(fn($m) => $m->next_match_id === $match->id);
+                if ($feeders->count() >= 2) {
+                    $tops = $feeders->map(fn($m) => $matchPositions[$m->id] ?? 0);
+                    $matchPositions[$match->id] = ($tops->min() + $tops->max()) / 2;
+                } elseif ($feeders->count() === 1) {
+                    $matchPositions[$match->id] = $matchPositions[$feeders->first()->id] ?? $mi * $slotHeight;
+                } else {
+                    $matchPositions[$match->id] = $mi * $slotHeight * pow(2, $ri - $anchorRoundIndex);
+                }
+            }
+        }
+
+        // Position rounds before anchor (R1 matches placed at the center of their target in anchor round)
+        for ($ri = $anchorRoundIndex - 1; $ri >= 0; $ri--) {
+            foreach ($rounds[$ri]->matches as $mi => $match) {
+                if ($match->next_match_id && isset($matchPositions[$match->next_match_id])) {
+                    $targetTop = $matchPositions[$match->next_match_id];
+                    $siblings = $rounds[$ri]->matches->filter(fn($m) => $m->next_match_id === $match->next_match_id);
+                    $siblingIndex = $siblings->values()->search(fn($m) => $m->id === $match->id);
+                    $siblingCount = $siblings->count();
+                    if ($siblingCount === 2) {
+                        $offset = ($siblingIndex === 0 ? -1 : 1) * $slotHeight * 0.5;
+                        $matchPositions[$match->id] = $targetTop + $offset;
+                    } else {
+                        $matchPositions[$match->id] = $targetTop;
+                    }
+                } else {
+                    $matchPositions[$match->id] = $mi * $slotHeight;
+                }
+            }
+        }
+
         $positions = [];
         foreach ($rounds as $roundIndex => $round) {
             foreach ($round->matches as $matchIndex => $match) {
+                $top = $matchPositions[$match->id] ?? 0;
                 $positions[$roundIndex][$matchIndex] = [
-                    'top' => $slotTop($roundIndex, $matchIndex),
-                    'center' => $slotCenter($roundIndex, $matchIndex),
+                    'top' => $top,
+                    'center' => $top + $matchHeight / 2,
                 ];
             }
         }
@@ -142,7 +190,7 @@
                             @foreach ($round->matches as $matchIndex => $match)
                                 <div
                                     class="bracket-slot"
-                                    style="top: {{ $slotTop($roundIndex, $matchIndex) }}px;"
+                                    style="top: {{ $positions[$roundIndex][$matchIndex]['top'] }}px;"
                                 >
                                     @include('brackets.partials.match-card', [
                                         'match' => $match,
@@ -156,27 +204,36 @@
                         @if (! $isLastRound)
                             @php
                                 $nextRound = $rounds[$roundIndex + 1];
-                                $nextMatchCount = $nextRound->matches->count();
                             @endphp
                             <div class="bracket-connector" style="width: {{ $connectorWidth }}px; height: {{ $treeHeight }}px;">
                                 <svg width="{{ $connectorWidth }}" height="{{ $treeHeight }}" class="bracket-connector__svg">
-                                    @for ($k = 0; $k < $nextMatchCount; $k++)
+                                    @foreach ($nextRound->matches as $nmi => $nextMatch)
                                         @php
-                                            $yA = $positions[$roundIndex][$k * 2]['center'];
-                                            $yB = $positions[$roundIndex][$k * 2 + 1]['center'];
-                                            $yMid = ($yA + $yB) / 2;
-                                            $yNext = $positions[$roundIndex + 1][$k]['center'];
+                                            $feeders = $round->matches->filter(fn($m) => $m->next_match_id === $nextMatch->id)->values();
+                                            $nextY = $positions[$roundIndex + 1][$nmi]['center'];
                                             $midX = $connectorWidth / 2;
                                         @endphp
-                                        {{-- Horizontal dari match A --}}
-                                        <line x1="0" y1="{{ $yA }}" x2="{{ $midX }}" y2="{{ $yA }}" class="bracket-connector__line"/>
-                                        {{-- Horizontal dari match B --}}
-                                        <line x1="0" y1="{{ $yB }}" x2="{{ $midX }}" y2="{{ $yB }}" class="bracket-connector__line"/>
-                                        {{-- Vertical penghubung A–B --}}
-                                        <line x1="{{ $midX }}" y1="{{ $yA }}" x2="{{ $midX }}" y2="{{ $yB }}" class="bracket-connector__line"/>
-                                        {{-- Horizontal ke babak berikutnya --}}
-                                        <line x1="{{ $midX }}" y1="{{ $yMid }}" x2="{{ $connectorWidth }}" y2="{{ $yMid }}" class="bracket-connector__line"/>
-                                    @endfor
+
+                                        @if ($feeders->count() >= 2)
+                                            @php
+                                                $fi0 = $round->matches->values()->search(fn($m) => $m->id === $feeders[0]->id);
+                                                $fi1 = $round->matches->values()->search(fn($m) => $m->id === $feeders[1]->id);
+                                                $yA = $positions[$roundIndex][$fi0]['center'];
+                                                $yB = $positions[$roundIndex][$fi1]['center'];
+                                                $yMid = ($yA + $yB) / 2;
+                                            @endphp
+                                            <line x1="0" y1="{{ $yA }}" x2="{{ $midX }}" y2="{{ $yA }}" class="bracket-connector__line"/>
+                                            <line x1="0" y1="{{ $yB }}" x2="{{ $midX }}" y2="{{ $yB }}" class="bracket-connector__line"/>
+                                            <line x1="{{ $midX }}" y1="{{ $yA }}" x2="{{ $midX }}" y2="{{ $yB }}" class="bracket-connector__line"/>
+                                            <line x1="{{ $midX }}" y1="{{ $yMid }}" x2="{{ $connectorWidth }}" y2="{{ $yMid }}" class="bracket-connector__line"/>
+                                        @elseif ($feeders->count() === 1)
+                                            @php
+                                                $fi0 = $round->matches->values()->search(fn($m) => $m->id === $feeders[0]->id);
+                                                $yA = $positions[$roundIndex][$fi0]['center'];
+                                            @endphp
+                                            <line x1="0" y1="{{ $yA }}" x2="{{ $connectorWidth }}" y2="{{ $nextY }}" class="bracket-connector__line"/>
+                                        @endif
+                                    @endforeach
                                 </svg>
                             </div>
                         @endif

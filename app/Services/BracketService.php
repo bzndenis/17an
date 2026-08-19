@@ -84,11 +84,75 @@ class BracketService
     {
         $participantCount = $competition->participants()->count();
         $bracketSize = (int) pow(2, (int) ceil(log($participantCount, 2)));
+        $participants = $competition->competitionParticipants()
+            ->with('participant')
+            ->orderBy('seed')
+            ->get()
+            ->pluck('participant');
+
+        $seeded = $this->standardBracketSeeding($participants->pluck('id')->toArray(), $bracketSize);
+        $firstRoundSlots = $bracketSize / 2;
+
+        $byeAdvances = [];
+        $actualFirstRoundPairs = [];
+
+        for ($i = 0; $i < $firstRoundSlots; $i++) {
+            $homeId = $seeded[$i * 2] ?? null;
+            $awayId = $seeded[$i * 2 + 1] ?? null;
+
+            if ($homeId && $awayId) {
+                $actualFirstRoundPairs[$i] = [$homeId, $awayId];
+            } elseif ($homeId) {
+                $byeAdvances[$i] = $homeId;
+            } elseif ($awayId) {
+                $byeAdvances[$i] = $awayId;
+            }
+        }
+
         $allMatches = collect();
         $matchNumber = 1;
         $matchesByRound = [];
 
+        if (count($actualFirstRoundPairs) > 0) {
+            $firstRound = $rounds->first();
+            $roundMatches = collect();
+
+            foreach ($actualFirstRoundPairs as $slotIndex => $pair) {
+                $match = GameMatch::create([
+                    'round_id' => $firstRound->id,
+                    'competition_id' => $competition->id,
+                    'match_number' => $matchNumber++,
+                    'status' => MatchStatus::Scheduled,
+                    'bracket_position' => $slotIndex + 1,
+                    'venue' => $competition->location,
+                    'scheduled_at' => $competition->start_at,
+                ]);
+
+                foreach ($pair as $participantId) {
+                    MatchParticipant::create([
+                        'match_id' => $match->id,
+                        'participant_id' => $participantId,
+                        'score' => 0,
+                        'is_winner' => false,
+                    ]);
+                }
+
+                $roundMatches->push($match);
+                $allMatches->push($match);
+            }
+
+            $matchesByRound[0] = $roundMatches;
+        } else {
+            $rounds->shift();
+        }
+
+        $startRound = count($actualFirstRoundPairs) > 0 ? 1 : 0;
+
         foreach ($rounds as $roundIndex => $round) {
+            if ($roundIndex === 0 && count($actualFirstRoundPairs) > 0) {
+                continue;
+            }
+
             $matchesInRound = (int) ($bracketSize / pow(2, $roundIndex + 1));
             $roundMatches = collect();
 
@@ -110,20 +174,52 @@ class BracketService
             $matchesByRound[$roundIndex] = $roundMatches;
         }
 
-        foreach ($matchesByRound as $roundIndex => $roundMatches) {
-            if (! isset($matchesByRound[$roundIndex + 1])) {
+        $roundKeys = array_keys($matchesByRound);
+        foreach ($roundKeys as $idx => $roundKey) {
+            if (! isset($roundKeys[$idx + 1])) {
                 continue;
             }
+            $nextKey = $roundKeys[$idx + 1];
+            $currentMatches = $matchesByRound[$roundKey];
+            $nextMatches = $matchesByRound[$nextKey];
 
-            $nextRoundMatches = $matchesByRound[$roundIndex + 1];
-
-            foreach ($roundMatches as $position => $match) {
+            foreach ($currentMatches as $position => $match) {
                 $nextMatchIndex = (int) floor($position / 2);
-                $match->update(['next_match_id' => $nextRoundMatches[$nextMatchIndex]->id]);
+                if (isset($nextMatches[$nextMatchIndex])) {
+                    $match->update(['next_match_id' => $nextMatches[$nextMatchIndex]->id]);
+                }
             }
         }
 
-        $this->assignFirstRoundParticipants($competition, $matchesByRound[0] ?? collect());
+        $secondRoundKey = count($actualFirstRoundPairs) > 0 ? 1 : array_key_first($matchesByRound);
+        if ($secondRoundKey !== null && isset($matchesByRound[$secondRoundKey])) {
+            $secondRoundMatches = $matchesByRound[$secondRoundKey];
+            foreach ($byeAdvances as $slotIndex => $participantId) {
+                $targetMatchIndex = (int) floor($slotIndex / 2);
+                if (isset($secondRoundMatches[$targetMatchIndex])) {
+                    MatchParticipant::firstOrCreate(
+                        ['match_id' => $secondRoundMatches[$targetMatchIndex]->id, 'participant_id' => $participantId],
+                        ['score' => 0, 'is_winner' => false]
+                    );
+                }
+            }
+        }
+
+        if (count($actualFirstRoundPairs) > 0) {
+            $firstRoundMatches = $matchesByRound[0];
+            $nextKey = $roundKeys[1] ?? null;
+            if ($nextKey !== null && isset($matchesByRound[$nextKey])) {
+                $nextRoundMatches = $matchesByRound[$nextKey];
+                $actualKeys = array_keys($actualFirstRoundPairs);
+                foreach ($firstRoundMatches as $pos => $match) {
+                    $originalSlot = $actualKeys[$pos];
+                    $nextMatchIndex = (int) floor($originalSlot / 2);
+                    if (isset($nextRoundMatches[$nextMatchIndex])) {
+                        $match->update(['next_match_id' => $nextRoundMatches[$nextMatchIndex]->id]);
+                    }
+                }
+            }
+        }
 
         return $allMatches;
     }
@@ -235,41 +331,40 @@ class BracketService
         return $allMatches;
     }
 
-    protected function assignFirstRoundParticipants(Competition $competition, Collection $firstRoundMatches): void
-    {
-        $participants = $competition->competitionParticipants()
-            ->with('participant')
-            ->orderBy('seed')
-            ->get()
-            ->pluck('participant');
-
-        $bracketSize = $firstRoundMatches->count() * 2;
-        $seeded = $this->standardBracketSeeding($participants->pluck('id')->toArray(), $bracketSize);
-
-        foreach ($firstRoundMatches as $index => $match) {
-            $homeId = $seeded[$index * 2] ?? null;
-            $awayId = $seeded[$index * 2 + 1] ?? null;
-
-            foreach ([$homeId, $awayId] as $participantId) {
-                if ($participantId) {
-                    MatchParticipant::create([
-                        'match_id' => $match->id,
-                        'participant_id' => $participantId,
-                        'score' => 0,
-                        'is_winner' => false,
-                    ]);
-                }
-            }
-        }
-    }
 
     protected function standardBracketSeeding(array $participantIds, int $bracketSize): array
     {
-        while (count($participantIds) < $bracketSize) {
-            $participantIds[] = null;
+        $order = $this->bracketSeedOrder($bracketSize);
+        $result = array_fill(0, $bracketSize, null);
+
+        foreach ($participantIds as $index => $id) {
+            $position = $order[$index] ?? $index;
+            $result[$position] = $id;
         }
 
-        return $participantIds;
+        return $result;
+    }
+
+    protected function bracketSeedOrder(int $size): array
+    {
+        if ($size <= 1) {
+            return [0];
+        }
+
+        $rounds = (int) log($size, 2);
+        $order = [0, 1];
+
+        for ($r = 1; $r < $rounds; $r++) {
+            $newOrder = [];
+            $sum = pow(2, $r + 1) - 1;
+            foreach ($order as $pos) {
+                $newOrder[] = $pos;
+                $newOrder[] = $sum - $pos;
+            }
+            $order = $newOrder;
+        }
+
+        return $order;
     }
 
     protected function getRoundNames(int $totalRounds): array
