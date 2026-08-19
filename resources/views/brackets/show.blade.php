@@ -16,5 +16,9 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    @include('brackets.partials.visual', ['rounds' => $rounds, 'competition' => $competition, 'showGenerate' => true])
+    @if ($competition->system === \App\Enums\CompetitionSystem::Point)
+        @include('brackets.partials.point-system', ['rounds' => $rounds, 'competition' => $competition])
+    @else
+        @include('brackets.partials.visual', ['rounds' => $rounds, 'competition' => $competition, 'showGenerate' => true])
+    @endif
 </x-app-layout>

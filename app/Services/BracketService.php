@@ -39,6 +39,56 @@ class BracketService
         });
     }
 
+    public function advanceWinner(GameMatch $match, int $winnerParticipantId): void
+    {
+        DB::transaction(function () use ($match, $winnerParticipantId) {
+            $match->matchParticipants()->update(['is_winner' => false]);
+            $match->matchParticipants()
+                ->where('participant_id', $winnerParticipantId)
+                ->update(['is_winner' => true]);
+
+            if ($match->next_match_id) {
+                $nextMatch = GameMatch::find($match->next_match_id);
+                if ($nextMatch) {
+                    MatchParticipant::firstOrCreate(
+                        ['match_id' => $nextMatch->id, 'participant_id' => $winnerParticipantId],
+                        ['score' => 0, 'is_winner' => false]
+                    );
+                }
+            }
+
+            $this->activityLogService->log(
+                'bracket.advanced',
+                "Pemenang pertandingan #{$match->match_number} maju ke babak berikutnya.",
+                ['match_id' => $match->id, 'winner_id' => $winnerParticipantId]
+            );
+        });
+    }
+
+    public function resetBracket(Competition $competition): void
+    {
+        $matchIds = $competition->matches()->pluck('id');
+        MatchParticipant::whereIn('match_id', $matchIds)->delete();
+        MatchResult::whereIn('match_id', $matchIds)->delete();
+        $competition->matches()->delete();
+        $competition->rounds()->delete();
+    }
+
+    public function fixRoundNames(Competition $competition): void
+    {
+        $rounds = $competition->rounds()->orderBy('round_number')->get();
+        if ($rounds->isEmpty()) {
+            return;
+        }
+
+        $names = $this->getRoundNames($rounds->count());
+        foreach ($rounds as $index => $round) {
+            if (isset($names[$index]) && $round->name !== $names[$index]) {
+                $round->update(['name' => $names[$index]]);
+            }
+        }
+    }
+
     public function seedParticipants(Competition $competition): void
     {
         $entries = CompetitionParticipant::where('competition_id', $competition->id)
@@ -55,168 +105,163 @@ class BracketService
         }
     }
 
-    public function createRounds(Competition $competition): Collection
+    // ─── Knockout ───────────────────────────────────────────────
+
+    protected function generateKnockoutBracket(Competition $competition): Collection
     {
         $participantCount = $competition->participants()->count();
 
         if ($participantCount < 2) {
-            throw new \RuntimeException('Minimal 2 peserta diperlukan untuk membuat bracket.');
+            throw new \RuntimeException('Minimal 2 peserta diperlukan.');
         }
 
         $bracketSize = (int) pow(2, (int) ceil(log($participantCount, 2)));
-        $totalRounds = (int) log($bracketSize, 2);
-        $rounds = collect();
-        $roundNames = $this->getRoundNames($totalRounds);
 
-        for ($i = 1; $i <= $totalRounds; $i++) {
-            $rounds->push(Round::create([
-                'competition_id' => $competition->id,
-                'name' => $roundNames[$i - 1] ?? "Babak {$i}",
-                'round_number' => $i,
-                'type' => 'knockout',
-            ]));
-        }
-
-        return $rounds;
-    }
-
-    public function createMatches(Competition $competition, Collection $rounds): Collection
-    {
-        $participantCount = $competition->participants()->count();
-        $bracketSize = (int) pow(2, (int) ceil(log($participantCount, 2)));
         $participants = $competition->competitionParticipants()
             ->with('participant')
             ->orderBy('seed')
             ->get()
-            ->pluck('participant');
+            ->pluck('participant.id')
+            ->toArray();
 
-        $seeded = $this->standardBracketSeeding($participants->pluck('id')->toArray(), $bracketSize);
+        $seeded = $this->standardBracketSeeding($participants, $bracketSize);
         $firstRoundSlots = $bracketSize / 2;
 
-        $byeAdvances = [];
-        $actualFirstRoundPairs = [];
+        // Determine actual matches vs byes in the first round
+        $actualPairs = []; // slotIndex => [homeId, awayId]
+        $byeAdvances = []; // slotIndex => participantId
 
         for ($i = 0; $i < $firstRoundSlots; $i++) {
-            $homeId = $seeded[$i * 2] ?? null;
-            $awayId = $seeded[$i * 2 + 1] ?? null;
+            $home = $seeded[$i * 2] ?? null;
+            $away = $seeded[$i * 2 + 1] ?? null;
 
-            if ($homeId && $awayId) {
-                $actualFirstRoundPairs[$i] = [$homeId, $awayId];
-            } elseif ($homeId) {
-                $byeAdvances[$i] = $homeId;
-            } elseif ($awayId) {
-                $byeAdvances[$i] = $awayId;
+            if ($home && $away) {
+                $actualPairs[$i] = [$home, $away];
+            } elseif ($home) {
+                $byeAdvances[$i] = $home;
+            } elseif ($away) {
+                $byeAdvances[$i] = $away;
             }
         }
 
+        $hasFirstRound = count($actualPairs) > 0;
+        $totalFullRounds = (int) log($bracketSize, 2);
+        $roundNames = $this->getRoundNames($totalFullRounds);
+
+        // Create rounds — skip R1 if all are byes
+        $startRound = $hasFirstRound ? 0 : 1;
+        $rounds = collect();
+
+        for ($i = $startRound; $i < $totalFullRounds; $i++) {
+            $rounds->push(Round::create([
+                'competition_id' => $competition->id,
+                'name' => $roundNames[$i] ?? "Babak ".($i + 1),
+                'round_number' => $i + 1,
+                'type' => 'knockout',
+            ]));
+        }
+
+        // Create matches per round
         $allMatches = collect();
         $matchNumber = 1;
-        $matchesByRound = [];
+        $matchesByFullRound = []; // indexed by full round index (0-based)
 
-        if (count($actualFirstRoundPairs) > 0) {
-            $firstRound = $rounds->first();
+        foreach ($rounds as $round) {
+            $fullRoundIndex = $round->round_number - 1;
+            $matchesInRound = (int) ($bracketSize / pow(2, $fullRoundIndex + 1));
             $roundMatches = collect();
 
-            foreach ($actualFirstRoundPairs as $slotIndex => $pair) {
-                $match = GameMatch::create([
-                    'round_id' => $firstRound->id,
-                    'competition_id' => $competition->id,
-                    'match_number' => $matchNumber++,
-                    'status' => MatchStatus::Scheduled,
-                    'bracket_position' => $slotIndex + 1,
-                    'venue' => $competition->location,
-                    'scheduled_at' => $competition->start_at,
-                ]);
-
-                foreach ($pair as $participantId) {
-                    MatchParticipant::create([
-                        'match_id' => $match->id,
-                        'participant_id' => $participantId,
-                        'score' => 0,
-                        'is_winner' => false,
+            if ($fullRoundIndex === 0 && $hasFirstRound) {
+                // R1: only create matches for actual pairs
+                foreach ($actualPairs as $slotIndex => $pair) {
+                    $match = GameMatch::create([
+                        'round_id' => $round->id,
+                        'competition_id' => $competition->id,
+                        'match_number' => $matchNumber++,
+                        'status' => MatchStatus::Scheduled,
+                        'bracket_position' => $slotIndex + 1,
+                        'venue' => $competition->location,
+                        'scheduled_at' => $competition->start_at,
                     ]);
+
+                    foreach ($pair as $pid) {
+                        MatchParticipant::create([
+                            'match_id' => $match->id,
+                            'participant_id' => $pid,
+                            'score' => 0,
+                            'is_winner' => false,
+                        ]);
+                    }
+
+                    $roundMatches->push($match);
+                    $allMatches->push($match);
                 }
+            } else {
+                for ($m = 0; $m < $matchesInRound; $m++) {
+                    $match = GameMatch::create([
+                        'round_id' => $round->id,
+                        'competition_id' => $competition->id,
+                        'match_number' => $matchNumber++,
+                        'status' => MatchStatus::Scheduled,
+                        'bracket_position' => $m + 1,
+                        'venue' => $competition->location,
+                        'scheduled_at' => $competition->start_at,
+                    ]);
 
-                $roundMatches->push($match);
-                $allMatches->push($match);
+                    $roundMatches->push($match);
+                    $allMatches->push($match);
+                }
             }
 
-            $matchesByRound[0] = $roundMatches;
-        } else {
-            $rounds->shift();
+            $matchesByFullRound[$fullRoundIndex] = $roundMatches;
         }
 
-        $startRound = count($actualFirstRoundPairs) > 0 ? 1 : 0;
+        // Link next_match_id for rounds R2+ (non-R1 standard rounds)
+        $fullRoundKeys = array_keys($matchesByFullRound);
+        for ($k = 0; $k < count($fullRoundKeys) - 1; $k++) {
+            $curKey = $fullRoundKeys[$k];
+            $nextKey = $fullRoundKeys[$k + 1];
 
-        foreach ($rounds as $roundIndex => $round) {
-            if ($roundIndex === 0 && count($actualFirstRoundPairs) > 0) {
-                continue;
+            if ($curKey === 0 && $hasFirstRound) {
+                continue; // R1 linking handled separately below
             }
 
-            $matchesInRound = (int) ($bracketSize / pow(2, $roundIndex + 1));
-            $roundMatches = collect();
+            $curMatches = $matchesByFullRound[$curKey];
+            $nextMatches = $matchesByFullRound[$nextKey];
 
-            for ($m = 0; $m < $matchesInRound; $m++) {
-                $match = GameMatch::create([
-                    'round_id' => $round->id,
-                    'competition_id' => $competition->id,
-                    'match_number' => $matchNumber++,
-                    'status' => MatchStatus::Scheduled,
-                    'bracket_position' => $m + 1,
-                    'venue' => $competition->location,
-                    'scheduled_at' => $competition->start_at,
-                ]);
-
-                $roundMatches->push($match);
-                $allMatches->push($match);
-            }
-
-            $matchesByRound[$roundIndex] = $roundMatches;
-        }
-
-        $roundKeys = array_keys($matchesByRound);
-        foreach ($roundKeys as $idx => $roundKey) {
-            if (! isset($roundKeys[$idx + 1])) {
-                continue;
-            }
-            $nextKey = $roundKeys[$idx + 1];
-            $currentMatches = $matchesByRound[$roundKey];
-            $nextMatches = $matchesByRound[$nextKey];
-
-            foreach ($currentMatches as $position => $match) {
-                $nextMatchIndex = (int) floor($position / 2);
-                if (isset($nextMatches[$nextMatchIndex])) {
-                    $match->update(['next_match_id' => $nextMatches[$nextMatchIndex]->id]);
+            foreach ($curMatches as $pos => $match) {
+                $nextIdx = (int) floor($pos / 2);
+                if (isset($nextMatches[$nextIdx])) {
+                    $match->update(['next_match_id' => $nextMatches[$nextIdx]->id]);
                 }
             }
         }
 
-        $secondRoundKey = count($actualFirstRoundPairs) > 0 ? 1 : array_key_first($matchesByRound);
-        if ($secondRoundKey !== null && isset($matchesByRound[$secondRoundKey])) {
-            $secondRoundMatches = $matchesByRound[$secondRoundKey];
-            foreach ($byeAdvances as $slotIndex => $participantId) {
-                $targetMatchIndex = (int) floor($slotIndex / 2);
-                if (isset($secondRoundMatches[$targetMatchIndex])) {
+        // Link R1 matches → R2 using original slot index
+        if ($hasFirstRound && isset($matchesByFullRound[1])) {
+            $r2Matches = $matchesByFullRound[1];
+            $actualSlots = array_keys($actualPairs);
+
+            foreach ($matchesByFullRound[0] as $pos => $match) {
+                $originalSlot = $actualSlots[$pos];
+                $r2Idx = (int) floor($originalSlot / 2);
+                if (isset($r2Matches[$r2Idx])) {
+                    $match->update(['next_match_id' => $r2Matches[$r2Idx]->id]);
+                }
+            }
+        }
+
+        // Place bye advances into the appropriate second-round match
+        $secondRoundKey = $hasFirstRound ? 1 : $startRound;
+        if (isset($matchesByFullRound[$secondRoundKey])) {
+            $targetMatches = $matchesByFullRound[$secondRoundKey];
+            foreach ($byeAdvances as $slotIndex => $pid) {
+                $targetIdx = (int) floor($slotIndex / 2);
+                if (isset($targetMatches[$targetIdx])) {
                     MatchParticipant::firstOrCreate(
-                        ['match_id' => $secondRoundMatches[$targetMatchIndex]->id, 'participant_id' => $participantId],
+                        ['match_id' => $targetMatches[$targetIdx]->id, 'participant_id' => $pid],
                         ['score' => 0, 'is_winner' => false]
                     );
-                }
-            }
-        }
-
-        if (count($actualFirstRoundPairs) > 0) {
-            $firstRoundMatches = $matchesByRound[0];
-            $nextKey = $roundKeys[1] ?? null;
-            if ($nextKey !== null && isset($matchesByRound[$nextKey])) {
-                $nextRoundMatches = $matchesByRound[$nextKey];
-                $actualKeys = array_keys($actualFirstRoundPairs);
-                foreach ($firstRoundMatches as $pos => $match) {
-                    $originalSlot = $actualKeys[$pos];
-                    $nextMatchIndex = (int) floor($originalSlot / 2);
-                    if (isset($nextRoundMatches[$nextMatchIndex])) {
-                        $match->update(['next_match_id' => $nextRoundMatches[$nextMatchIndex]->id]);
-                    }
                 }
             }
         }
@@ -224,69 +269,7 @@ class BracketService
         return $allMatches;
     }
 
-    public function advanceWinner(GameMatch $match, int $winnerParticipantId): void
-    {
-        DB::transaction(function () use ($match, $winnerParticipantId) {
-            $match->matchParticipants()->update(['is_winner' => false]);
-            $match->matchParticipants()
-                ->where('participant_id', $winnerParticipantId)
-                ->update(['is_winner' => true]);
-
-            if ($match->next_match_id) {
-                $nextMatch = GameMatch::find($match->next_match_id);
-
-                if ($nextMatch) {
-                    MatchParticipant::firstOrCreate(
-                        [
-                            'match_id' => $nextMatch->id,
-                            'participant_id' => $winnerParticipantId,
-                        ],
-                        ['score' => 0, 'is_winner' => false]
-                    );
-                }
-            }
-
-            $this->activityLogService->log(
-                'bracket.advanced',
-                "Pemenang pertandingan #{$match->match_number} maju ke babak berikutnya.",
-                [
-                    'match_id' => $match->id,
-                    'winner_id' => $winnerParticipantId,
-                ]
-            );
-        });
-    }
-
-    public function resetBracket(Competition $competition): void
-    {
-        $competition->matches()->delete();
-        $competition->rounds()->delete();
-    }
-
-    public function fixRoundNames(Competition $competition): void
-    {
-        $rounds = $competition->rounds()->orderBy('round_number')->get();
-        $totalRounds = $rounds->count();
-
-        if ($totalRounds === 0) {
-            return;
-        }
-
-        $names = $this->getRoundNames($totalRounds);
-
-        foreach ($rounds as $index => $round) {
-            if (isset($names[$index]) && $round->name !== $names[$index]) {
-                $round->update(['name' => $names[$index]]);
-            }
-        }
-    }
-
-    protected function generateKnockoutBracket(Competition $competition): Collection
-    {
-        $rounds = $this->createRounds($competition);
-
-        return $this->createMatches($competition, $rounds);
-    }
+    // ─── Point / Round-Robin ────────────────────────────────────
 
     protected function generatePointMatches(Competition $competition): Collection
     {
@@ -331,6 +314,7 @@ class BracketService
         return $allMatches;
     }
 
+    // ─── Seeding ────────────────────────────────────────────────
 
     protected function standardBracketSeeding(array $participantIds, int $bracketSize): array
     {
@@ -356,7 +340,7 @@ class BracketService
 
         for ($r = 1; $r < $rounds; $r++) {
             $newOrder = [];
-            $sum = pow(2, $r + 1) - 1;
+            $sum = (int) pow(2, $r + 1) - 1;
             foreach ($order as $pos) {
                 $newOrder[] = $pos;
                 $newOrder[] = $sum - $pos;

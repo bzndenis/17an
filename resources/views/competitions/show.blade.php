@@ -186,7 +186,11 @@
         @endif
 
     @elseif ($tab === 'bracket')
-        @include('brackets.partials.visual', ['rounds' => $rounds ?? collect(), 'competition' => $competition, 'showGenerate' => false])
+        @if ($competition->system === \App\Enums\CompetitionSystem::Point)
+            @include('brackets.partials.point-system', ['rounds' => $rounds ?? collect(), 'competition' => $competition])
+        @else
+            @include('brackets.partials.visual', ['rounds' => $rounds ?? collect(), 'competition' => $competition, 'showGenerate' => false])
+        @endif
 
     @elseif ($tab === 'ranking')
         @if (($rankings ?? collect())->isEmpty())
