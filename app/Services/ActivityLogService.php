@@ -7,15 +7,11 @@ use Illuminate\Support\Facades\Auth;
 
 class ActivityLogService
 {
-    public function __construct(
-        protected EventService $eventService,
-    ) {}
-
-    public function log(string $action, ?string $description = null, array $metadata = []): ActivityLog
+    public function log(string $action, ?string $description = null, array $metadata = [], ?int $eventId = null): ActivityLog
     {
         return ActivityLog::create([
             'user_id' => Auth::id(),
-            'event_id' => $this->eventService->getActiveEventId(),
+            'event_id' => $eventId ?? session(EventService::SESSION_KEY),
             'action' => $action,
             'description' => $description,
             'metadata' => $metadata ?: null,

@@ -5,6 +5,7 @@
         ['route' => 'competitions.index', 'label' => 'Lomba', 'icon' => 'trophy'],
         ['route' => 'matches.index', 'label' => 'Pertandingan', 'icon' => 'swords'],
         ['route' => 'rankings.global', 'label' => 'Peringkat', 'icon' => 'medal'],
+        ['route' => 'events.index', 'label' => 'Event', 'icon' => 'calendar-days'],
         ['route' => 'schedules.index', 'label' => 'Jadwal', 'icon' => 'calendar'],
         ['route' => 'announcements.index', 'label' => 'Pengumuman', 'icon' => 'megaphone'],
         ['route' => 'settings.edit', 'label' => 'Pengaturan', 'icon' => 'settings'],
@@ -45,6 +46,9 @@
                 $active = request()->routeIs($item['route']) || request()->routeIs(str_replace('.index', '.*', $item['route']));
                 if ($item['route'] === 'dashboard') {
                     $active = request()->routeIs('dashboard');
+                }
+                if ($item['route'] === 'events.index') {
+                    $active = request()->routeIs('events.*');
                 }
             @endphp
             <a

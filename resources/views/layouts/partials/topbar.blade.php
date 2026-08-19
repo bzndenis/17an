@@ -20,20 +20,29 @@
     <div class="ml-auto flex items-center gap-2 sm:gap-3">
         {{-- Event selector --}}
         @if ($events && $events->count())
-            <form action="{{ route('events.switch') }}" method="POST" class="hidden sm:block">
-                @csrf
-                <select
-                    name="event_id"
-                    onchange="this.form.submit()"
-                    class="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm font-medium text-secondary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            <div class="hidden items-center gap-2 sm:flex">
+                <form action="{{ route('events.switch') }}" method="POST">
+                    @csrf
+                    <select
+                        name="event_id"
+                        onchange="this.form.submit()"
+                        class="rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-8 text-sm font-medium text-secondary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                    >
+                        @foreach ($events as $event)
+                            <option value="{{ $event->id }}" @selected($activeEvent && $activeEvent->id === $event->id)>
+                                {{ $event->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+                <a
+                    href="{{ route('events.index') }}"
+                    class="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800"
+                    title="Kelola Event"
                 >
-                    @foreach ($events as $event)
-                        <option value="{{ $event->id }}" @selected($activeEvent && $activeEvent->id === $event->id)>
-                            {{ $event->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </form>
+                    <i data-lucide="settings-2" class="h-4 w-4"></i>
+                </a>
+            </div>
         @endif
 
         {{-- Notifications --}}

@@ -37,6 +37,7 @@
                 </div>
 
                 <div class="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-slate-700">
+                    <x-ui.button variant="outline" :href="route('events.index')">Kelola Event</x-ui.button>
                     <x-ui.button type="submit">Simpan Pengaturan</x-ui.button>
                 </div>
             </form>

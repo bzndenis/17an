@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified', 'event'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/events/switch', [EventController::class, 'switch'])->name('events.switch');
+    Route::resource('events', EventController::class)->except(['show']);
 
     Route::resource('participants', ParticipantController::class);
     Route::get('participants-export', [ParticipantController::class, 'export'])->name('participants.export');
