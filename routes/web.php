@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified', 'event'])->group(function () {
     Route::resource('competitions', CompetitionController::class);
     Route::get('competitions/{competition}/wizard', [CompetitionController::class, 'wizard'])->name('competitions.wizard');
     Route::post('competitions/{competition}/wizard', [CompetitionController::class, 'saveWizard'])->name('competitions.wizard.save');
+    Route::post('competitions/{competition}/matches/randomize', [CompetitionController::class, 'randomizeMatches'])->name('competitions.matches.randomize');
 
     Route::get('matches', [MatchController::class, 'index'])->name('matches.index');
     Route::get('matches/{match}', [MatchController::class, 'show'])->name('matches.show');

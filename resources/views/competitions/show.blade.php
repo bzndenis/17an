@@ -122,6 +122,32 @@
         @if (($matches ?? collect())->isEmpty())
             <x-ui.empty-state title="Belum Ada Pertandingan" description="Generate bracket untuk membuat jadwal pertandingan." icon="swords" :actionHref="route('brackets.show', $competition)" actionLabel="Ke Bracket" />
         @else
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    {{ $matches->count() }} pertandingan
+                    @if ($canRandomizeMatches ?? false)
+                        · Urutan pasangan bisa diacak ulang sebelum pertandingan dimulai
+                    @endif
+                </p>
+                @if ($canRandomizeMatches ?? false)
+                    <form
+                        action="{{ route('competitions.matches.randomize', $competition) }}"
+                        method="POST"
+                        onsubmit="return confirm('Random ulang semua pasangan pertandingan? Hasil dan penempatan peserta akan direset.')"
+                    >
+                        @csrf
+                        <x-ui.button variant="outline" type="submit">
+                            <i data-lucide="shuffle" class="h-4 w-4"></i>
+                            Random Ulang Pasangan
+                        </x-ui.button>
+                    </form>
+                @else
+                    <span class="text-xs text-slate-400" title="Tidak bisa random ulang jika ada pertandingan selesai/live">
+                        <i data-lucide="lock" class="inline h-3.5 w-3.5"></i>
+                        Random ulang terkunci (ada pertandingan berjalan/selesai)
+                    </span>
+                @endif
+            </div>
             <div class="table-container">
                 <table class="data-table">
                     <thead>

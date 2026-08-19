@@ -167,6 +167,24 @@ class BracketService
         $competition->rounds()->delete();
     }
 
+    public function fixRoundNames(Competition $competition): void
+    {
+        $rounds = $competition->rounds()->orderBy('round_number')->get();
+        $totalRounds = $rounds->count();
+
+        if ($totalRounds === 0) {
+            return;
+        }
+
+        $names = $this->getRoundNames($totalRounds);
+
+        foreach ($rounds as $index => $round) {
+            if (isset($names[$index]) && $round->name !== $names[$index]) {
+                $round->update(['name' => $names[$index]]);
+            }
+        }
+    }
+
     protected function generateKnockoutBracket(Competition $competition): Collection
     {
         $rounds = $this->createRounds($competition);
@@ -258,8 +276,8 @@ class BracketService
     {
         $names = [];
 
-        for ($i = $totalRounds; $i >= 1; $i--) {
-            $matchesInRound = pow(2, $i - 1);
+        for ($i = 1; $i <= $totalRounds; $i++) {
+            $matchesInRound = (int) pow(2, $totalRounds - $i);
 
             $names[] = match (true) {
                 $matchesInRound === 1 => 'Final',
@@ -270,6 +288,6 @@ class BracketService
             };
         }
 
-        return array_reverse($names);
+        return $names;
     }
 }

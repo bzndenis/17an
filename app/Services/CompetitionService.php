@@ -150,13 +150,18 @@ class CompetitionService
                     ->with(['round', 'matchParticipants.participant', 'result.winner'])
                     ->orderBy('match_number')
                     ->get(),
+                'canRandomizeMatches' => app(MatchService::class)->canRandomizeMatchups($competition),
             ],
-            'bracket' => [
-                'rounds' => $competition->rounds()
-                    ->with(['matches.matchParticipants.participant', 'matches.result'])
-                    ->orderBy('round_number')
-                    ->get(),
-            ],
+            'bracket' => (function () use ($competition) {
+                $this->bracketService->fixRoundNames($competition);
+
+                return [
+                    'rounds' => $competition->rounds()
+                        ->with(['matches.matchParticipants.participant', 'matches.result'])
+                        ->orderBy('round_number')
+                        ->get(),
+                ];
+            })(),
             'ranking' => [
                 'rankings' => $competition->rankings()
                     ->with('participant')

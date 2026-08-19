@@ -90,16 +90,328 @@
         @apply flex flex-col justify-around gap-4 min-w-[220px];
     }
 
+    /* ── Bracket Viewer ── */
+    .bracket-viewer {
+        @apply overflow-visible rounded-2xl border border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900/50;
+    }
+
+    .bracket-viewer--fullscreen {
+        @apply fixed inset-0 z-50 rounded-none border-0 bg-slate-50 dark:bg-slate-900;
+    }
+
+    .bracket-toolbar {
+        @apply flex flex-wrap items-center gap-4 border-b border-slate-200 px-4 py-3 dark:border-slate-700;
+    }
+
+    .bracket-toolbar__stats {
+        @apply flex items-center gap-4;
+    }
+
+    .bracket-stat {
+        @apply flex flex-col;
+    }
+
+    .bracket-stat__value {
+        @apply text-lg font-bold text-secondary dark:text-white;
+    }
+
+    .bracket-stat__label {
+        @apply text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .bracket-stat--live .bracket-stat__value {
+        @apply text-red-500;
+    }
+
+    .bracket-toolbar__progress {
+        @apply min-w-[120px] flex-1;
+    }
+
+    .bracket-progress-track {
+        @apply h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700;
+    }
+
+    .bracket-progress-fill {
+        @apply h-full rounded-full bg-primary transition-all duration-500;
+    }
+
+    .bracket-toolbar__actions {
+        @apply ml-auto flex items-center gap-1;
+    }
+
+    .bracket-tool-btn {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700;
+    }
+
+    .bracket-tool-btn--label {
+        @apply w-auto min-w-[3.5rem] px-2 text-xs font-medium;
+    }
+
+    .bracket-tool-btn--danger {
+        @apply text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20;
+    }
+
+    .bracket-scroll {
+        @apply overflow-x-auto p-6 pb-10;
+        overflow-y: visible;
+        scrollbar-width: thin;
+    }
+
+    .bracket-canvas {
+        @apply inline-flex min-w-max flex-col;
+    }
+
+    .bracket-headers {
+        @apply mb-4 flex items-stretch;
+    }
+
+    .bracket-header {
+        @apply flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-center dark:border-slate-600 dark:bg-slate-800;
+    }
+
+    .bracket-header--final {
+        @apply border-primary/30 bg-primary/5 dark:bg-primary/10;
+    }
+
+    .bracket-header--champion {
+        @apply border-amber-400/40 bg-gradient-to-b from-amber-50 to-white dark:from-amber-900/20 dark:to-slate-800;
+    }
+
+    .bracket-header__title {
+        @apply text-xs font-bold uppercase tracking-wider text-secondary dark:text-white;
+    }
+
+    .bracket-header--final .bracket-header__title {
+        @apply text-primary;
+    }
+
+    .bracket-header__meta {
+        @apply mt-0.5 text-[10px] text-slate-400;
+    }
+
+    .bracket-header-spacer {
+        @apply shrink-0;
+    }
+
+    /* ── Bracket Tree ── */
+    .bracket-tree {
+        @apply relative flex items-start;
+    }
+
+    .bracket-col {
+        @apply relative shrink-0;
+    }
+
+    .bracket-col--champion {
+        @apply relative;
+    }
+
+    .bracket-slot {
+        @apply absolute left-0 w-full;
+    }
+
+    .bracket-connector {
+        @apply relative shrink-0;
+    }
+
+    .bracket-connector__svg {
+        @apply overflow-visible;
+    }
+
+    .bracket-connector__line {
+        stroke: rgb(203 213 225);
+        stroke-width: 2;
+        fill: none;
+    }
+
+    :is(.dark) .bracket-connector__line {
+        stroke: rgb(71 85 105);
+    }
+
+    /* ── Match Card (fixed height for alignment) ── */
     .bracket-match {
-        @apply rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-800;
+        @apply relative z-10 flex h-[132px] w-[268px] flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 dark:border-slate-600 dark:bg-slate-800;
+        box-sizing: border-box;
     }
 
-    .bracket-participant {
-        @apply flex items-center justify-between rounded px-2 py-1.5 text-sm;
+    .bracket-match:hover {
+        @apply -translate-y-0.5 border-primary/40 shadow-md shadow-primary/10;
     }
 
-    .bracket-participant-winner {
-        @apply bg-primary/10 font-semibold text-primary dark:bg-primary/20;
+    .bracket-match--final {
+        @apply border-primary/30 ring-1 ring-primary/20;
+    }
+
+    .bracket-match--live {
+        @apply border-red-400/50 ring-2 ring-red-400/30;
+    }
+
+    .bracket-match__header {
+        @apply flex shrink-0 items-center justify-between border-b border-slate-100 px-3 py-1.5 dark:border-slate-700;
+    }
+
+    .bracket-match__number {
+        @apply font-mono text-xs font-semibold text-slate-400;
+    }
+
+    .bracket-match__live {
+        @apply inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-500;
+    }
+
+    .bracket-match__live-dot {
+        @apply h-1.5 w-1.5 animate-pulse rounded-full bg-red-500;
+    }
+
+    .bracket-match__body {
+        @apply flex min-h-0 flex-1 flex-col justify-center divide-y divide-slate-100 dark:divide-slate-700;
+    }
+
+    .bracket-match__row {
+        @apply flex min-h-[2.25rem] flex-1 items-center justify-between gap-1.5 px-3 py-1;
+    }
+
+    .bracket-match__row--winner {
+        @apply bg-primary/10 dark:bg-primary/20;
+    }
+
+    .bracket-match__row--loser {
+        @apply opacity-50;
+    }
+
+    .bracket-match__row--winner .bracket-match__name {
+        @apply font-semibold text-primary;
+    }
+
+    .bracket-match__player {
+        @apply flex min-w-0 flex-1 items-center gap-2;
+    }
+
+    .bracket-match__avatar {
+        @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500 dark:bg-slate-700 dark:text-slate-300;
+    }
+
+    .bracket-match__avatar--winner {
+        @apply bg-primary text-white;
+    }
+
+    .bracket-match__name {
+        @apply min-w-0 text-sm font-medium leading-tight text-secondary dark:text-white;
+    }
+
+    .bracket-match__row--empty .bracket-match__name {
+        @apply text-xs italic text-slate-400;
+    }
+
+    .bracket-match__trophy {
+        @apply shrink-0 text-amber-500;
+    }
+
+    .bracket-match__score {
+        @apply min-w-[1.75rem] rounded-md bg-slate-100 px-2 py-0.5 text-center font-mono text-sm font-bold text-slate-600 dark:bg-slate-700 dark:text-slate-300;
+    }
+
+    .bracket-match__score--winner {
+        @apply bg-primary text-white;
+    }
+
+    .bracket-match__footer {
+        @apply flex shrink-0 items-center justify-between border-t border-slate-100 px-3 py-1 dark:border-slate-700;
+    }
+
+    .bracket-match__meta {
+        @apply inline-flex items-center gap-1 text-[10px] text-slate-400;
+    }
+
+    .bracket-match__cta {
+        @apply text-[10px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100;
+    }
+
+    /* ── Champion card ── */
+    .bracket-champion-card {
+        @apply flex h-[132px] w-[268px] flex-col items-center justify-center rounded-xl border border-amber-300/50 bg-gradient-to-b from-amber-50/90 to-white text-center dark:border-amber-700/40 dark:from-amber-900/30 dark:to-slate-800;
+        box-sizing: border-box;
+    }
+
+    .bracket-champion-card__icon {
+        @apply mb-0.5;
+    }
+
+    .bracket-champion-card__avatar {
+        @apply mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-lg font-bold text-white shadow-md;
+    }
+
+    .bracket-champion-card__name {
+        @apply text-sm font-bold text-secondary dark:text-white;
+    }
+
+    .bracket-champion-card__label {
+        @apply text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400;
+    }
+
+    .bracket-champion-card__empty {
+        @apply flex flex-col items-center gap-1 text-xs text-slate-400;
+    }
+
+    /* legacy champion (keep for compat) */
+    .bracket-column--champion {
+        @apply min-w-[200px];
+    }
+
+    .bracket-champion {
+        @apply flex flex-col items-center rounded-2xl border border-amber-200/60 bg-gradient-to-b from-amber-50/80 to-white p-6 text-center dark:border-amber-700/40 dark:from-amber-900/20 dark:to-slate-800;
+    }
+
+    .bracket-champion__badge {
+        @apply mb-2;
+    }
+
+    .bracket-champion__avatar {
+        @apply mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white shadow-lg shadow-primary/30;
+    }
+
+    .bracket-champion__name {
+        @apply text-lg font-bold text-secondary dark:text-white;
+    }
+
+    .bracket-champion__label {
+        @apply mt-1 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400;
+    }
+
+    .bracket-champion__prize {
+        @apply mt-2 text-sm text-slate-500 dark:text-slate-400;
+    }
+
+    .bracket-champion__placeholder {
+        @apply flex flex-col items-center gap-2 py-4 text-sm text-slate-400;
+    }
+
+    /* ── Legend ── */
+    .bracket-legend {
+        @apply flex flex-wrap items-center gap-4 border-t border-slate-200 px-4 py-3 dark:border-slate-700;
+    }
+
+    .bracket-legend__item {
+        @apply inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .bracket-legend__dot {
+        @apply h-2.5 w-2.5 rounded-full;
+    }
+
+    .bracket-legend__dot--winner {
+        @apply bg-primary;
+    }
+
+    .bracket-legend__dot--live {
+        @apply animate-pulse bg-red-500;
+    }
+
+    .bracket-legend__dot--scheduled {
+        @apply bg-slate-300 dark:bg-slate-600;
+    }
+
+    .bracket-legend__dot--finished {
+        @apply bg-emerald-500;
     }
 
     .podium-1 {

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCompetitionRequest;
 use App\Models\Competition;
 use App\Services\CompetitionService;
 use App\Services\EventService;
+use App\Services\MatchService;
 use App\Services\ParticipantService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class CompetitionController extends Controller
         protected CompetitionService $competitionService,
         protected ParticipantService $participantService,
         protected EventService $eventService,
+        protected MatchService $matchService,
     ) {}
 
     public function index(Request $request): View
@@ -129,5 +131,20 @@ class CompetitionController extends Controller
 
         return redirect()->route('competitions.wizard', ['competition' => $competition, 'step' => $step + 1])
             ->with('success', 'Langkah wizard berhasil disimpan.');
+    }
+
+    public function randomizeMatches(Competition $competition): RedirectResponse
+    {
+        $competition = $this->competitionService->findForEvent($competition->id);
+
+        try {
+            $this->matchService->randomizeMatchups($competition);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('competitions.show', ['competition' => $competition, 'tab' => 'matches'])
+            ->with('success', 'Pasangan pertandingan berhasil di-random ulang.');
     }
 }

@@ -20,6 +20,8 @@ class BracketController extends Controller
     {
         $competition = $this->competitionService->findForEvent($competition->id);
 
+        $this->bracketService->fixRoundNames($competition);
+
         $rounds = $competition->rounds()
             ->with(['matches.matchParticipants.participant', 'matches.result.winner'])
             ->orderBy('round_number')
