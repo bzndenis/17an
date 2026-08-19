@@ -1,0 +1,7 @@
+# Gunakan jika Document Root TIDAK bisa diarahkan ke folder /public
+# Letakkan file ini di public_html/ dan sesuaikan path di index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

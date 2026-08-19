@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * Alternatif index.php jika project Laravel berada di luar public_html
+ * dan isi folder public/ di-copy ke public_html/.
+ *
+ * Sesuaikan $laravelPath ke path absolut folder Laravel di server.
+ * Contoh: /home/username/17an
+ */
+
+$laravelPath = __DIR__.'/../17an';
+
+define('LARAVEL_START', microtime(true));
+
+if (file_exists($maintenance = $laravelPath.'/storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
+require $laravelPath.'/vendor/autoload.php';
+
+$app = require_once $laravelPath.'/bootstrap/app.php';
+
+$app->handleRequest(Illuminate\Http\Request::capture());
