@@ -45,17 +45,23 @@ class BracketController extends Controller
         ]);
     }
 
-    public function generate(Competition $competition): RedirectResponse
+    public function generate(Request $request, Competition $competition): RedirectResponse
     {
         $competition = $this->competitionService->findForEvent($competition->id);
 
         try {
-            $this->bracketService->generateBracket($competition);
+            if ($competition->matches()->exists() && ! $this->matchService->canRandomizeMatchups($competition)) {
+                return back()->with('error', 'Tidak bisa regenerate. Ada pertandingan yang sudah live/selesai.');
+            }
+
+            // Acak seed dulu supaya pasangan di bracket benar-benar berubah
+            $this->matchService->shuffleParticipantSeeds($competition);
+            $this->bracketService->generateBracket($competition->fresh());
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Bracket berhasil dibuat.');
+        return back()->with('success', 'Bracket berhasil dibuat ulang dengan pasangan acak.');
     }
 
     public function randomize(Competition $competition): RedirectResponse

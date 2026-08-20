@@ -168,7 +168,7 @@
                     </form>
                 @endif
                 @if ($showGenerate ?? true)
-                    <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate bracket? Data pertandingan lama akan diganti.')">
+                    <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate & acak pasangan? Data pertandingan lama akan diganti.')">
                         @csrf
                         <button type="submit" class="bracket-tool-btn bracket-tool-btn--danger" title="Regenerate"><i data-lucide="refresh-cw" class="h-4 w-4"></i></button>
                     </form>

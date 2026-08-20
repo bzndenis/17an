@@ -29,7 +29,7 @@
             action="{{ route('brackets.generate', $competition) }}"
             method="POST"
             @if ($rounds->isNotEmpty())
-                onsubmit="return confirm('Regenerate bracket grup + knockout? Data pertandingan lama akan diganti.')"
+                onsubmit="return confirm('Regenerate & acak peserta ke grup? Data pertandingan lama akan diganti.')"
             @endif
         >
             @csrf

@@ -80,8 +80,8 @@
     "semantic_hash": "f7ba8245c1fa0f3e7d8591364c8f8943"
   },
   "app/Http/Controllers/BracketController.php": {
-    "mtime": 1787230564.1631818,
-    "ast_hash": "9ed34a7e449d0e49b15bba638ab1ced9",
+    "mtime": 1787250743.436205,
+    "ast_hash": "16ad11adf3a0c1c145a3496aaa4c59f7",
     "semantic_hash": ""
   },
   "app/Http/Controllers/CompetitionController.php": {
@@ -285,8 +285,8 @@
     "semantic_hash": "a2e1f9e1bdc396a375b0fff1aae97712"
   },
   "app/Services/MatchService.php": {
-    "mtime": 1787250397.5077107,
-    "ast_hash": "6fdc690086644220720431bb45df794b",
+    "mtime": 1787250743.4362364,
+    "ast_hash": "5d452f6b81f7d344fa56325cf2bdc479",
     "semantic_hash": ""
   },
   "app/Services/ParticipantService.php": {
@@ -635,13 +635,13 @@
     "semantic_hash": ""
   },
   "resources/views/brackets/partials/point-system.blade.php": {
-    "mtime": 1787230675.6286817,
-    "ast_hash": "d208585f495f96a7500a09ab9d018ba2",
+    "mtime": 1787250747.3118708,
+    "ast_hash": "5380ce125beb89f2a3684f7e3cbf32d7",
     "semantic_hash": ""
   },
   "resources/views/brackets/partials/visual.blade.php": {
-    "mtime": 1787230671.7507336,
-    "ast_hash": "a957d6264c5e7129c3fa89f4e2ad5cc7",
+    "mtime": 1787250746.6529415,
+    "ast_hash": "6eb9875e23f94b7b083bdf6c8e5ac297",
     "semantic_hash": ""
   },
   "resources/views/brackets/show.blade.php": {
@@ -1010,8 +1010,8 @@
     "semantic_hash": ""
   },
   "resources/views/brackets/partials/group-knockout.blade.php": {
-    "mtime": 1787230621.7769992,
-    "ast_hash": "819d51eca290fad48251b9c506cd441c",
+    "mtime": 1787250747.7951455,
+    "ast_hash": "ab5c1c83a40bb77b582146557b4fff0c",
     "semantic_hash": ""
   },
   "DEPLOY-NIAGAHOSTER.md": {

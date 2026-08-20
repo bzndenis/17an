@@ -198,13 +198,7 @@ class MatchService
         }
 
         DB::transaction(function () use ($competition) {
-            $participantIds = $competition->participants()
-                ->pluck('participants.id')
-                ->shuffle()
-                ->values()
-                ->toArray();
-
-            $this->updateSeeds($competition, $participantIds);
+            $this->shuffleParticipantSeeds($competition);
 
             if ($competition->matches()->exists()) {
                 $this->bracketService->generateBracket($competition->fresh());
@@ -220,6 +214,23 @@ class MatchService
                 ['competition_id' => $competition->id]
             );
         });
+    }
+
+    public function shuffleParticipantSeeds(Competition $competition): void
+    {
+        $participantIds = $competition->participants()
+            ->pluck('participants.id')
+            ->shuffle()
+            ->values()
+            ->toArray();
+
+        $this->updateSeeds($competition, $participantIds);
+
+        if ($competition->system === CompetitionSystem::GroupKnockout) {
+            $entries = $competition->competitionParticipants()->orderBy('seed')->get();
+            $groupCount = max(2, (int) ($competition->config['group_count'] ?? 2));
+            $this->bracketService->assignParticipantsToGroups($entries, $groupCount);
+        }
     }
 
     protected function updateSeeds(Competition $competition, array $participantIds): void

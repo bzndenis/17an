@@ -186,8 +186,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_announcementcontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "announcementcontroller.php"
     },
     {
@@ -659,8 +659,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_bracketcontroller",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "bracketcontroller.php"
     },
     {
@@ -703,15 +703,15 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "app_http_controllers_bracketcontroller_bracketcontroller_generate",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".generate()"
     },
     {
       "label": ".randomize()",
       "file_type": "code",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L61",
+      "source_location": "L67",
       "_origin": "ast",
       "id": "app_http_controllers_bracketcontroller_bracketcontroller_randomize",
       "community": 1,
@@ -722,11 +722,11 @@
       "label": ".update()",
       "file_type": "code",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L74",
+      "source_location": "L80",
       "_origin": "ast",
       "id": "app_http_controllers_bracketcontroller_bracketcontroller_update",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".update()"
     },
     {
@@ -736,8 +736,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_competitioncontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "competitioncontroller.php"
     },
     {
@@ -901,8 +901,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_dashboardcontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "dashboardcontroller.php"
     },
     {
@@ -912,8 +912,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_http_controllers_dashboardcontroller_dashboardcontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "dashboardcontroller"
     },
     {
@@ -923,8 +923,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "app_http_controllers_dashboardcontroller_dashboardcontroller_construct",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".__construct()"
     },
     {
@@ -934,8 +934,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "app_http_controllers_dashboardcontroller_dashboardcontroller_index",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".index()"
     },
     {
@@ -956,8 +956,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "app_http_controllers_eventcontroller_eventcontroller",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "eventcontroller"
     },
     {
@@ -967,8 +967,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "app_http_controllers_eventcontroller_eventcontroller_construct",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".__construct()"
     },
     {
@@ -978,8 +978,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_http_controllers_eventcontroller_eventcontroller_index",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".index()"
     },
     {
@@ -1022,8 +1022,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "app_http_controllers_eventcontroller_eventcontroller_update",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".update()"
     },
     {
@@ -1033,8 +1033,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "app_http_controllers_eventcontroller_eventcontroller_destroy",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".destroy()"
     },
     {
@@ -1055,8 +1055,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_matchcontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "matchcontroller.php"
     },
     {
@@ -1077,8 +1077,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "app_http_controllers_matchcontroller_matchcontroller_construct",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": ".__construct()"
     },
     {
@@ -1154,8 +1154,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "app_http_controllers_participantcontroller_participantcontroller_index",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".index()"
     },
     {
@@ -1286,8 +1286,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "app_http_controllers_profilecontroller_profilecontroller_update",
-      "community": 5,
-      "community_name": "Illuminate\\Foundation\\Http\\FormRequest",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".update()"
     },
     {
@@ -1308,8 +1308,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_rankingcontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": "rankingcontroller.php"
     },
     {
@@ -1352,8 +1352,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "app_http_controllers_rankingcontroller_rankingcontroller_global",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".global()"
     },
     {
@@ -1363,8 +1363,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "schedulecontroller.php"
     },
     {
@@ -1374,8 +1374,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "schedulecontroller"
     },
     {
@@ -1385,8 +1385,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_construct",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".__construct()"
     },
     {
@@ -1396,8 +1396,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_index",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".index()"
     },
     {
@@ -1407,8 +1407,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_create",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".create()"
     },
     {
@@ -1418,8 +1418,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_store",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".store()"
     },
     {
@@ -1429,8 +1429,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_edit",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".edit()"
     },
     {
@@ -1440,8 +1440,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_update",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".update()"
     },
     {
@@ -1451,8 +1451,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_destroy",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".destroy()"
     },
     {
@@ -1462,8 +1462,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "app_http_controllers_schedulecontroller_schedulecontroller_ensurebelongstoactiveevent",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".ensurebelongstoactiveevent()"
     },
     {
@@ -1473,8 +1473,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_controllers_settingscontroller",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "settingscontroller.php"
     },
     {
@@ -1506,8 +1506,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_http_controllers_settingscontroller_settingscontroller_edit",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": ".edit()"
     },
     {
@@ -1517,8 +1517,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "app_http_controllers_settingscontroller_settingscontroller_update",
-      "community": 18,
-      "community_name": ".run",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".update()"
     },
     {
@@ -1528,8 +1528,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_http_middleware_setactiveevent",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "setactiveevent.php"
     },
     {
@@ -1539,8 +1539,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "app_http_middleware_setactiveevent_setactiveevent",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "setactiveevent"
     },
     {
@@ -1550,8 +1550,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_http_middleware_setactiveevent_setactiveevent_construct",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".__construct()"
     },
     {
@@ -1561,8 +1561,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "app_http_middleware_setactiveevent_setactiveevent_handle",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".handle()"
     },
     {
@@ -1572,8 +1572,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "closure",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "closure"
     },
     {
@@ -2056,8 +2056,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "app_models_announcement_announcement_event",
-      "community": 8,
-      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": ".event()"
     },
     {
@@ -2331,8 +2331,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_models_event",
-      "community": 24,
-      "community_name": "Competition.php",
+      "community": 19,
+      "community_name": "Schedule",
       "norm_label": "event.php"
     },
     {
@@ -2364,8 +2364,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "app_models_event_event_settings",
-      "community": 27,
-      "community_name": "AppServiceProvider.php",
+      "community": 19,
+      "community_name": "Schedule",
       "norm_label": ".settings()"
     },
     {
@@ -2452,8 +2452,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_models_eventsetting_eventsetting",
-      "community": 18,
-      "community_name": ".run",
+      "community": 16,
+      "community_name": "Event.php",
       "norm_label": "eventsetting"
     },
     {
@@ -2463,8 +2463,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "app_models_eventsetting_eventsetting_event",
-      "community": 18,
-      "community_name": ".run",
+      "community": 16,
+      "community_name": "Event.php",
       "norm_label": ".event()"
     },
     {
@@ -2474,8 +2474,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_models_gamematch",
-      "community": 27,
-      "community_name": "AppServiceProvider.php",
+      "community": 24,
+      "community_name": "Competition.php",
       "norm_label": "gamematch.php"
     },
     {
@@ -2540,8 +2540,8 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "app_models_gamematch_gamematch_previousmatches",
-      "community": 10,
-      "community_name": "Event",
+      "community": 21,
+      "community_name": "GameMatch",
       "norm_label": ".previousmatches()"
     },
     {
@@ -2551,8 +2551,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "app_models_gamematch_gamematch_matchparticipants",
-      "community": 10,
-      "community_name": "Event",
+      "community": 21,
+      "community_name": "GameMatch",
       "norm_label": ".matchparticipants()"
     },
     {
@@ -2562,8 +2562,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "app_models_gamematch_gamematch_result",
-      "community": 27,
-      "community_name": "AppServiceProvider.php",
+      "community": 19,
+      "community_name": "Schedule",
       "norm_label": ".result()"
     },
     {
@@ -2584,8 +2584,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_models_matchparticipant",
-      "community": 8,
-      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
+      "community": 24,
+      "community_name": "Competition.php",
       "norm_label": "matchparticipant.php"
     },
     {
@@ -2595,8 +2595,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_models_matchparticipant_matchparticipant",
-      "community": 13,
-      "community_name": "ParticipantController.php",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": "matchparticipant"
     },
     {
@@ -2606,8 +2606,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_models_matchparticipant_matchparticipant_casts",
-      "community": 13,
-      "community_name": "ParticipantController.php",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".casts()"
     },
     {
@@ -2617,8 +2617,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "app_models_matchparticipant_matchparticipant_match",
-      "community": 13,
-      "community_name": "ParticipantController.php",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".match()"
     },
     {
@@ -2628,8 +2628,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "app_models_matchparticipant_matchparticipant_participant",
-      "community": 13,
-      "community_name": "ParticipantController.php",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".participant()"
     },
     {
@@ -2639,8 +2639,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_models_matchresult",
-      "community": 8,
-      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
+      "community": 24,
+      "community_name": "Competition.php",
       "norm_label": "matchresult.php"
     },
     {
@@ -2727,8 +2727,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "app_models_participant_participant_event",
-      "community": 8,
-      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": ".event()"
     },
     {
@@ -2760,8 +2760,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "app_models_participant_participant_competitionentries",
-      "community": 10,
-      "community_name": "Event",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": ".competitionentries()"
     },
     {
@@ -2771,8 +2771,8 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "app_models_participant_participant_matchparticipants",
-      "community": 10,
-      "community_name": "Event",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": ".matchparticipants()"
     },
     {
@@ -2793,8 +2793,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "app_models_participant_participant_awards",
-      "community": 10,
-      "community_name": "Event",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": ".awards()"
     },
     {
@@ -2914,8 +2914,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_models_round",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": "round.php"
     },
     {
@@ -2925,8 +2925,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "app_models_round_round",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": "round"
     },
     {
@@ -2936,8 +2936,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_models_round_round_casts",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".casts()"
     },
     {
@@ -2947,8 +2947,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "app_models_round_round_competition",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".competition()"
     },
     {
@@ -2958,8 +2958,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "app_models_round_round_matches",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".matches()"
     },
     {
@@ -2969,8 +2969,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_models_schedule",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 8,
+      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
       "norm_label": "schedule.php"
     },
     {
@@ -2980,8 +2980,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_models_schedule_schedule",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 8,
+      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
       "norm_label": "schedule"
     },
     {
@@ -2991,8 +2991,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_models_schedule_schedule_casts",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 8,
+      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
       "norm_label": ".casts()"
     },
     {
@@ -3002,8 +3002,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "app_models_schedule_schedule_event",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 8,
+      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
       "norm_label": ".event()"
     },
     {
@@ -3013,8 +3013,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "app_models_schedule_schedule_scopeforevent",
-      "community": 19,
-      "community_name": "Schedule",
+      "community": 8,
+      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
       "norm_label": ".scopeforevent()"
     },
     {
@@ -3101,8 +3101,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_services_activitylogservice",
-      "community": 8,
-      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": "activitylogservice.php"
     },
     {
@@ -3123,8 +3123,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "app_services_activitylogservice_activitylogservice_log",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".log()"
     },
     {
@@ -3145,8 +3145,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": "bracketservice"
     },
     {
@@ -3156,8 +3156,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_construct",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 9,
+      "community_name": "EventService",
       "norm_label": ".__construct()"
     },
     {
@@ -3167,8 +3167,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_generatebracket",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".generatebracket()"
     },
     {
@@ -3178,8 +3178,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_advancewinner",
-      "community": 13,
-      "community_name": "ParticipantController.php",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".advancewinner()"
     },
     {
@@ -3189,8 +3189,8 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_resolvenextmatchside",
-      "community": 13,
-      "community_name": "ParticipantController.php",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".resolvenextmatchside()"
     },
     {
@@ -3200,8 +3200,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_resetbracket",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".resetbracket()"
     },
     {
@@ -3211,8 +3211,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_fixroundnames",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".fixroundnames()"
     },
     {
@@ -3222,8 +3222,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_seedparticipants",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".seedparticipants()"
     },
     {
@@ -3233,8 +3233,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_generateknockoutbracket",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".generateknockoutbracket()"
     },
     {
@@ -3244,8 +3244,8 @@
       "source_location": "L299",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_buildmatchunits",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".buildmatchunits()"
     },
     {
@@ -3255,8 +3255,8 @@
       "source_location": "L314",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_buildmatchunitsfromentries",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".buildmatchunitsfromentries()"
     },
     {
@@ -3266,8 +3266,8 @@
       "source_location": "L356",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_attachunit",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".attachunit()"
     },
     {
@@ -3277,8 +3277,8 @@
       "source_location": "L368",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_generategroupknockoutbracket",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".generategroupknockoutbracket()"
     },
     {
@@ -3288,8 +3288,8 @@
       "source_location": "L444",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_assignparticipantstogroups",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".assignparticipantstogroups()"
     },
     {
@@ -3299,8 +3299,8 @@
       "source_location": "L463",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_tryadvancefromgroups",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".tryadvancefromgroups()"
     },
     {
@@ -3310,8 +3310,8 @@
       "source_location": "L564",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_resolvegroupqualifiers",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".resolvegroupqualifiers()"
     },
     {
@@ -3321,8 +3321,8 @@
       "source_location": "L609",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_normalizeunit",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".normalizeunit()"
     },
     {
@@ -3332,8 +3332,8 @@
       "source_location": "L621",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_createemptyknockoutstructure",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".createemptyknockoutstructure()"
     },
     {
@@ -3343,8 +3343,8 @@
       "source_location": "L678",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_groupletter",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".groupletter()"
     },
     {
@@ -3354,8 +3354,8 @@
       "source_location": "L685",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_generatepointmatches",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".generatepointmatches()"
     },
     {
@@ -3365,8 +3365,8 @@
       "source_location": "L731",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_standardbracketseeding",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".standardbracketseeding()"
     },
     {
@@ -3376,8 +3376,8 @@
       "source_location": "L744",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_bracketseedorder",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".bracketseedorder()"
     },
     {
@@ -3387,8 +3387,8 @@
       "source_location": "L766",
       "_origin": "ast",
       "id": "app_services_bracketservice_bracketservice_getroundnames",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": ".getroundnames()"
     },
     {
@@ -3420,8 +3420,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_services_competitionservice_competitionservice_construct",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": ".__construct()"
     },
     {
@@ -3574,8 +3574,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_services_dashboardservice_dashboardservice",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "dashboardservice"
     },
     {
@@ -3585,8 +3585,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "app_services_dashboardservice_dashboardservice_construct",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".__construct()"
     },
     {
@@ -3607,8 +3607,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "app_services_dashboardservice_dashboardservice_getrecentactivity",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".getrecentactivity()"
     },
     {
@@ -3618,8 +3618,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "app_services_dashboardservice_dashboardservice_getupcomingmatches",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 21,
+      "community_name": "GameMatch",
       "norm_label": ".getupcomingmatches()"
     },
     {
@@ -3629,8 +3629,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "app_services_dashboardservice_dashboardservice_getcompetitionoverview",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".getcompetitionoverview()"
     },
     {
@@ -3651,8 +3651,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "app_services_eventservice_eventservice",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "eventservice"
     },
     {
@@ -3673,8 +3673,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "app_services_eventservice_eventservice_getactiveeventid",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".getactiveeventid()"
     },
     {
@@ -3684,8 +3684,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "app_services_eventservice_eventservice_getactiveevent",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".getactiveevent()"
     },
     {
@@ -3717,8 +3717,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "app_services_eventservice_eventservice_requireactiveeventid",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".requireactiveeventid()"
     },
     {
@@ -3739,8 +3739,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "app_services_eventservice_eventservice_find",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".find()"
     },
     {
@@ -3772,8 +3772,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "app_services_eventservice_eventservice_delete",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": ".delete()"
     },
     {
@@ -3794,8 +3794,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_services_matchservice",
-      "community": 8,
-      "community_name": "Illuminate\\Database\\Eloquent\\Relations\\BelongsTo",
+      "community": 24,
+      "community_name": "Competition.php",
       "norm_label": "matchservice.php"
     },
     {
@@ -3805,8 +3805,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "app_services_matchservice_matchservice",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": "matchservice"
     },
     {
@@ -3816,8 +3816,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "app_services_matchservice_matchservice_construct",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": ".__construct()"
     },
     {
@@ -3827,8 +3827,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "app_services_matchservice_matchservice_paginate",
-      "community": 21,
-      "community_name": "GameMatch",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": ".paginate()"
     },
     {
@@ -3838,8 +3838,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "app_services_matchservice_matchservice_findforevent",
-      "community": 21,
-      "community_name": "GameMatch",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": ".findforevent()"
     },
     {
@@ -3849,8 +3849,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "app_services_matchservice_matchservice_updateresult",
-      "community": 21,
-      "community_name": "GameMatch",
+      "community": 1,
+      "community_name": "Competition",
       "norm_label": ".updateresult()"
     },
     {
@@ -3887,10 +3887,21 @@
       "norm_label": ".randomizematchups()"
     },
     {
+      "label": ".shuffleParticipantSeeds()",
+      "file_type": "code",
+      "source_file": "app/Services/MatchService.php",
+      "source_location": "L219",
+      "_origin": "ast",
+      "id": "app_services_matchservice_matchservice_shuffleparticipantseeds",
+      "community": 1,
+      "community_name": "Competition",
+      "norm_label": ".shuffleparticipantseeds()"
+    },
+    {
       "label": ".updateSeeds()",
       "file_type": "code",
       "source_file": "app/Services/MatchService.php",
-      "source_location": "L225",
+      "source_location": "L236",
       "_origin": "ast",
       "id": "app_services_matchservice_matchservice_updateseeds",
       "community": 1,
@@ -4080,8 +4091,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_services_rankingservice",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 21,
+      "community_name": "GameMatch",
       "norm_label": "rankingservice.php"
     },
     {
@@ -4146,8 +4157,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_view_components_applayout",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": "applayout.php"
     },
     {
@@ -4157,8 +4168,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_view_components_applayout_applayout",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": "applayout"
     },
     {
@@ -4168,8 +4179,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "app_view_components_applayout_applayout_construct",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": ".__construct()"
     },
     {
@@ -4179,8 +4190,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "app_view_components_applayout_applayout_render",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": ".render()"
     },
     {
@@ -4190,8 +4201,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_view_components_guestlayout",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": "guestlayout.php"
     },
     {
@@ -4201,8 +4212,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_view_components_guestlayout_guestlayout",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": "guestlayout"
     },
     {
@@ -4212,8 +4223,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "app_view_components_guestlayout_guestlayout_render",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": ".render()"
     },
     {
@@ -5851,8 +5862,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "database_seeders_databaseseeder_databaseseeder",
-      "community": 24,
-      "community_name": "Competition.php",
+      "community": 14,
+      "community_name": "Participant",
       "norm_label": "databaseseeder"
     },
     {
@@ -5862,8 +5873,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "database_seeders_databaseseeder_databaseseeder_run",
-      "community": 18,
-      "community_name": ".run",
+      "community": 14,
+      "community_name": "Participant",
       "norm_label": ".run()"
     },
     {
@@ -7586,8 +7597,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "routes_web",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 0,
+      "community_name": "Illuminate\\Http\\RedirectResponse",
       "norm_label": "web.php"
     },
     {
@@ -9313,8 +9324,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "illuminate_support_collection",
-      "community": 1,
-      "community_name": "Competition",
+      "community": 22,
+      "community_name": "ParticipantsExport",
       "norm_label": "illuminate\\support\\collection"
     },
     {
@@ -9412,8 +9423,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "symfony_component_httpfoundation_response",
-      "community": 9,
-      "community_name": "EventService",
+      "community": 10,
+      "community_name": "Event",
       "norm_label": "symfony\\component\\httpfoundation\\response"
     },
     {
@@ -9500,8 +9511,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "illuminate_database_eloquent_softdeletes",
-      "community": 24,
-      "community_name": "Competition.php",
+      "community": 19,
+      "community_name": "Schedule",
       "norm_label": "illuminate\\database\\eloquent\\softdeletes"
     },
     {
@@ -9511,8 +9522,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "illuminate_database_eloquent_relations_hasone",
-      "community": 27,
-      "community_name": "AppServiceProvider.php",
+      "community": 19,
+      "community_name": "Schedule",
       "norm_label": "illuminate\\database\\eloquent\\relations\\hasone"
     },
     {
@@ -9588,8 +9599,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "illuminate_view_component",
-      "community": 0,
-      "community_name": "Illuminate\\Http\\RedirectResponse",
+      "community": 13,
+      "community_name": "ParticipantController.php",
       "norm_label": "illuminate\\view\\component"
     },
     {
@@ -9610,8 +9621,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "illuminate_database_seeder",
-      "community": 24,
-      "community_name": "Competition.php",
+      "community": 14,
+      "community_name": "Participant",
       "norm_label": "illuminate\\database\\seeder"
     },
     {
@@ -12090,7 +12101,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L61",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_http_controllers_bracketcontroller_bracketcontroller",
@@ -12112,7 +12123,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L74",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_http_controllers_bracketcontroller_bracketcontroller",
@@ -12254,7 +12265,19 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L61",
+      "source_location": "L48",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "_origin": "ast",
+      "source": "app_http_controllers_bracketcontroller_bracketcontroller_generate",
+      "target": "illuminate_http_request",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "app/Http/Controllers/BracketController.php",
+      "source_location": "L67",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -12266,7 +12289,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L61",
+      "source_location": "L67",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -12278,7 +12301,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L74",
+      "source_location": "L80",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -12290,7 +12313,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L74",
+      "source_location": "L80",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -12302,7 +12325,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "app/Http/Controllers/BracketController.php",
-      "source_location": "L74",
+      "source_location": "L80",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -17431,7 +17454,19 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "app/Services/MatchService.php",
-      "source_location": "L225",
+      "source_location": "L219",
+      "weight": 1.0,
+      "context": "parameter_type",
+      "_origin": "ast",
+      "source": "app_services_matchservice_matchservice_shuffleparticipantseeds",
+      "target": "app_models_competition_competition",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "app/Services/MatchService.php",
+      "source_location": "L236",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -17728,7 +17763,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app/Services/MatchService.php",
-      "source_location": "L228",
+      "source_location": "L239",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_services_matchservice_matchservice_updateseeds",
@@ -22579,6 +22614,17 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "app/Services/MatchService.php",
+      "source_location": "L219",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "app_services_matchservice_matchservice",
+      "target": "app_services_matchservice_matchservice_shuffleparticipantseeds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "app/Services/MatchService.php",
       "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
@@ -22590,7 +22636,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "app/Services/MatchService.php",
-      "source_location": "L225",
+      "source_location": "L236",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_services_matchservice_matchservice",
@@ -22638,10 +22684,22 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app/Services/MatchService.php",
-      "source_location": "L207",
+      "source_location": "L201",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_services_matchservice_matchservice_randomizematchups",
+      "target": "app_services_matchservice_matchservice_shuffleparticipantseeds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app/Services/MatchService.php",
+      "source_location": "L227",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "app_services_matchservice_matchservice_shuffleparticipantseeds",
       "target": "app_services_matchservice_matchservice_updateseeds",
       "confidence_score": 1.0
     },
@@ -27165,5 +27223,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "95253b5f34ddf3c5db5b8ea468c57603eb2b1e4a"
+  "built_at_commit": "53919813787439bda7471e50ed2ff7e8fb4c0ee2"
 }

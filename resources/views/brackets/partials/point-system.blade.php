@@ -40,7 +40,7 @@
                             </button>
                         </form>
                     @endif
-                    <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate semua pertandingan? Data lama akan diganti.')">
+                    <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate & acak pasangan? Data pertandingan lama akan diganti.')">
                         @csrf
                         <button type="submit" class="text-sm text-red-500 hover:text-red-700 flex items-center gap-1">
                             <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Regenerate
