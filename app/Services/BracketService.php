@@ -25,9 +25,11 @@ class BracketService
             $this->resetBracket($competition);
             $this->seedParticipants($competition);
 
-            $matches = $competition->system === CompetitionSystem::Point
-                ? $this->generatePointMatches($competition)
-                : $this->generateKnockoutBracket($competition);
+            $matches = match ($competition->system) {
+                CompetitionSystem::Point, CompetitionSystem::League => $this->generatePointMatches($competition),
+                CompetitionSystem::GroupKnockout => $this->generateGroupKnockoutBracket($competition),
+                default => $this->generateKnockoutBracket($competition),
+            };
 
             $this->activityLogService->log(
                 'bracket.generated',
@@ -267,6 +269,297 @@ class BracketService
         }
 
         return $allMatches;
+    }
+
+    // ─── Group + Knockout ───────────────────────────────────────
+
+    protected function generateGroupKnockoutBracket(Competition $competition): Collection
+    {
+        $groupCount = max(2, (int) ($competition->config['group_count'] ?? 2));
+        $qualifyPerGroup = max(1, (int) ($competition->config['qualify_per_group'] ?? 2));
+
+        $entries = $competition->competitionParticipants()
+            ->orderBy('seed')
+            ->get();
+
+        $minParticipants = $groupCount * 2;
+        if ($entries->count() < $minParticipants) {
+            throw new \RuntimeException("Minimal {$minParticipants} peserta diperlukan untuk {$groupCount} grup.");
+        }
+
+        $groups = $this->assignParticipantsToGroups($entries, $groupCount);
+        $allMatches = collect();
+        $matchNumber = 1;
+        $roundNumber = 1;
+
+        foreach ($groups as $groupNum => $participantIds) {
+            $round = Round::create([
+                'competition_id' => $competition->id,
+                'name' => 'Grup '.$this->groupLetter($groupNum),
+                'round_number' => $roundNumber++,
+                'type' => 'group',
+            ]);
+
+            $ids = $participantIds->values()->all();
+
+            for ($i = 0; $i < count($ids); $i++) {
+                for ($j = $i + 1; $j < count($ids); $j++) {
+                    $match = GameMatch::create([
+                        'round_id' => $round->id,
+                        'competition_id' => $competition->id,
+                        'match_number' => $matchNumber++,
+                        'status' => MatchStatus::Scheduled,
+                        'bracket_position' => $groupNum,
+                        'venue' => $competition->location,
+                        'scheduled_at' => $competition->start_at,
+                    ]);
+
+                    foreach ([$ids[$i], $ids[$j]] as $pid) {
+                        MatchParticipant::create([
+                            'match_id' => $match->id,
+                            'participant_id' => $pid,
+                            'score' => 0,
+                            'is_winner' => false,
+                        ]);
+                    }
+
+                    $allMatches->push($match);
+                }
+            }
+        }
+
+        $qualifierCount = $groupCount * $qualifyPerGroup;
+        $knockoutMatches = $this->createEmptyKnockoutStructure($competition, $qualifierCount, $roundNumber, $matchNumber);
+        $allMatches = $allMatches->merge($knockoutMatches);
+
+        return $allMatches;
+    }
+
+    /**
+     * Snake-draft participants into groups by seed order.
+     *
+     * @param  Collection<int, CompetitionParticipant>  $entries
+     * @return array<int, Collection<int, int>>
+     */
+    public function assignParticipantsToGroups(Collection $entries, int $groupCount): array
+    {
+        $groups = [];
+        for ($g = 1; $g <= $groupCount; $g++) {
+            $groups[$g] = collect();
+        }
+
+        foreach ($entries->values() as $index => $entry) {
+            $row = intdiv($index, $groupCount);
+            $col = $index % $groupCount;
+            $groupNum = $row % 2 === 0 ? ($col + 1) : ($groupCount - $col);
+
+            $entry->update(['group_number' => $groupNum]);
+            $groups[$groupNum]->push($entry->participant_id);
+        }
+
+        return $groups;
+    }
+
+    public function tryAdvanceFromGroups(Competition $competition): bool
+    {
+        if ($competition->system !== CompetitionSystem::GroupKnockout) {
+            return false;
+        }
+
+        $groupRounds = $competition->rounds()->where('type', 'group')->get();
+        if ($groupRounds->isEmpty()) {
+            return false;
+        }
+
+        $pendingGroupMatches = $competition->matches()
+            ->whereIn('round_id', $groupRounds->pluck('id'))
+            ->where('status', '!=', MatchStatus::Finished)
+            ->exists();
+
+        if ($pendingGroupMatches) {
+            return false;
+        }
+
+        $firstKnockoutRound = $competition->rounds()
+            ->where('type', 'knockout')
+            ->orderBy('round_number')
+            ->first();
+
+        if (! $firstKnockoutRound) {
+            return false;
+        }
+
+        $firstRoundMatches = $firstKnockoutRound->matches()->orderBy('bracket_position')->orderBy('match_number')->get();
+        $alreadySeeded = MatchParticipant::whereIn('match_id', $firstRoundMatches->pluck('id'))->exists();
+        if ($alreadySeeded) {
+            return false;
+        }
+
+        $qualifyPerGroup = max(1, (int) ($competition->config['qualify_per_group'] ?? 2));
+        $qualifiers = $this->resolveGroupQualifiers($competition, $qualifyPerGroup);
+
+        if ($qualifiers->isEmpty()) {
+            return false;
+        }
+
+        $bracketSize = (int) pow(2, (int) ceil(log(max($qualifiers->count(), 2), 2)));
+        $seeded = $this->standardBracketSeeding($qualifiers->all(), $bracketSize);
+        $slots = (int) ($bracketSize / 2);
+
+        $actualPairs = [];
+        $byeAdvances = [];
+
+        for ($i = 0; $i < $slots; $i++) {
+            $home = $seeded[$i * 2] ?? null;
+            $away = $seeded[$i * 2 + 1] ?? null;
+
+            if ($home && $away) {
+                $actualPairs[$i] = [$home, $away];
+            } elseif ($home) {
+                $byeAdvances[$i] = $home;
+            } elseif ($away) {
+                $byeAdvances[$i] = $away;
+            }
+        }
+
+        foreach ($firstRoundMatches as $pos => $match) {
+            $slot = ($match->bracket_position ?? ($pos + 1)) - 1;
+            if (! isset($actualPairs[$slot])) {
+                continue;
+            }
+
+            foreach ($actualPairs[$slot] as $pid) {
+                MatchParticipant::firstOrCreate(
+                    ['match_id' => $match->id, 'participant_id' => $pid],
+                    ['score' => 0, 'is_winner' => false]
+                );
+            }
+        }
+
+        $secondRound = $competition->rounds()
+            ->where('type', 'knockout')
+            ->where('round_number', '>', $firstKnockoutRound->round_number)
+            ->orderBy('round_number')
+            ->first();
+
+        if ($secondRound) {
+            $secondMatches = $secondRound->matches()->orderBy('bracket_position')->orderBy('match_number')->get();
+            foreach ($byeAdvances as $slotIndex => $pid) {
+                $targetIdx = (int) floor($slotIndex / 2);
+                if (isset($secondMatches[$targetIdx])) {
+                    MatchParticipant::firstOrCreate(
+                        ['match_id' => $secondMatches[$targetIdx]->id, 'participant_id' => $pid],
+                        ['score' => 0, 'is_winner' => false]
+                    );
+                }
+            }
+        }
+
+        $this->activityLogService->log(
+            'bracket.group_advanced',
+            "Lolos fase grup lomba {$competition->name} dimasukkan ke bracket knockout.",
+            ['competition_id' => $competition->id]
+        );
+
+        return true;
+    }
+
+    /**
+     * @return Collection<int, int>
+     */
+    protected function resolveGroupQualifiers(Competition $competition, int $qualifyPerGroup): Collection
+    {
+        $competition->loadMissing('rankings');
+
+        $entries = $competition->competitionParticipants()
+            ->whereNotNull('group_number')
+            ->get()
+            ->groupBy('group_number');
+
+        $winners = collect();
+        $runners = collect();
+
+        foreach ($entries->sortKeys() as $groupEntries) {
+            $ranked = $groupEntries->sort(function ($a, $b) use ($competition) {
+                $rankA = $competition->rankings->firstWhere('participant_id', $a->participant_id);
+                $rankB = $competition->rankings->firstWhere('participant_id', $b->participant_id);
+
+                return [$rankB?->points ?? 0, $rankB?->won ?? 0, -($b->seed ?? 999)]
+                    <=> [$rankA?->points ?? 0, $rankA?->won ?? 0, -($a->seed ?? 999)];
+            })->values();
+
+            foreach ($ranked->take($qualifyPerGroup) as $index => $entry) {
+                if ($index === 0) {
+                    $winners->push($entry->participant_id);
+                } else {
+                    $runners->push($entry->participant_id);
+                }
+            }
+        }
+
+        return $winners->concat($runners)->values();
+    }
+
+    protected function createEmptyKnockoutStructure(
+        Competition $competition,
+        int $qualifierCount,
+        int $startRoundNumber,
+        int $startMatchNumber,
+    ): Collection {
+        $bracketSize = (int) pow(2, (int) ceil(log(max($qualifierCount, 2), 2)));
+        $totalFullRounds = (int) log($bracketSize, 2);
+        $roundNames = $this->getRoundNames($totalFullRounds);
+        $rounds = collect();
+        $allMatches = collect();
+        $matchNumber = $startMatchNumber;
+        $matchesByRound = [];
+
+        for ($i = 0; $i < $totalFullRounds; $i++) {
+            $round = Round::create([
+                'competition_id' => $competition->id,
+                'name' => $roundNames[$i] ?? 'Babak '.($i + 1),
+                'round_number' => $startRoundNumber + $i,
+                'type' => 'knockout',
+            ]);
+            $rounds->push($round);
+
+            $matchesInRound = (int) ($bracketSize / pow(2, $i + 1));
+            $roundMatches = collect();
+
+            for ($m = 0; $m < $matchesInRound; $m++) {
+                $match = GameMatch::create([
+                    'round_id' => $round->id,
+                    'competition_id' => $competition->id,
+                    'match_number' => $matchNumber++,
+                    'status' => MatchStatus::Scheduled,
+                    'bracket_position' => $m + 1,
+                    'venue' => $competition->location,
+                    'scheduled_at' => $competition->start_at,
+                ]);
+                $roundMatches->push($match);
+                $allMatches->push($match);
+            }
+
+            $matchesByRound[$i] = $roundMatches;
+        }
+
+        for ($i = 0; $i < count($matchesByRound) - 1; $i++) {
+            $cur = $matchesByRound[$i];
+            $next = $matchesByRound[$i + 1];
+            foreach ($cur as $pos => $match) {
+                $nextIdx = (int) floor($pos / 2);
+                if (isset($next[$nextIdx])) {
+                    $match->update(['next_match_id' => $next[$nextIdx]->id]);
+                }
+            }
+        }
+
+        return $allMatches;
+    }
+
+    protected function groupLetter(int $groupNum): string
+    {
+        return chr(64 + $groupNum);
     }
 
     // ─── Point / Round-Robin ────────────────────────────────────

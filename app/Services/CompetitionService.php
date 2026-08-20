@@ -112,10 +112,36 @@ class CompetitionService
 
         return match ($step) {
             1 => $this->update($competition, $data),
-            2 => $this->syncParticipants($competition, $data['participant_ids'] ?? [], $data['seeds'] ?? []),
+            2 => $this->saveWizardParticipants($competition, $data),
             3 => $this->finalizeWizard($competition, $data),
             default => $competition,
         };
+    }
+
+    protected function saveWizardParticipants(Competition $competition, array $data): Competition
+    {
+        if ($competition->system === \App\Enums\CompetitionSystem::GroupKnockout) {
+            $competition = $this->update($competition, [
+                'config' => array_merge($competition->config ?? [], [
+                    'group_count' => max(2, (int) ($data['group_count'] ?? 2)),
+                    'qualify_per_group' => max(1, (int) ($data['qualify_per_group'] ?? 2)),
+                ]),
+            ]);
+        }
+
+        $competition = $this->syncParticipants(
+            $competition,
+            $data['participant_ids'] ?? [],
+            $data['seeds'] ?? []
+        );
+
+        if ($competition->system === \App\Enums\CompetitionSystem::GroupKnockout) {
+            $groupCount = max(2, (int) ($competition->config['group_count'] ?? 2));
+            $entries = $competition->competitionParticipants()->orderBy('seed')->get();
+            $this->bracketService->assignParticipantsToGroups($entries, $groupCount);
+        }
+
+        return $competition->fresh(['participants', 'competitionParticipants']);
     }
 
     public function syncParticipants(Competition $competition, array $participantIds, array $seeds = []): Competition
@@ -160,6 +186,14 @@ class CompetitionService
                         ->with(['matches.matchParticipants.participant', 'matches.result'])
                         ->orderBy('round_number')
                         ->get(),
+                    'canRandomizeMatches' => app(MatchService::class)->canRandomizeMatchups($competition),
+                    'groupEntries' => $competition->competitionParticipants()
+                        ->with('participant')
+                        ->whereNotNull('group_number')
+                        ->orderBy('group_number')
+                        ->orderBy('seed')
+                        ->get()
+                        ->groupBy('group_number'),
                 ];
             })(),
             'ranking' => [

@@ -1,7 +1,11 @@
 @php
     use App\Enums\CompetitionStatus;
+    use App\Enums\CompetitionSystem;
     $selectedIds = old('participant_ids', $competition->participants->pluck('id')->toArray());
     $seeds = old('seeds', $competition->participants->pluck('pivot.seed', 'id')->toArray());
+    $isGroupKnockout = $competition->system === CompetitionSystem::GroupKnockout;
+    $groupCount = old('group_count', $competition->config['group_count'] ?? 4);
+    $qualifyPerGroup = old('qualify_per_group', $competition->config['qualify_per_group'] ?? 2);
 @endphp
 
 <x-app-layout :title="'Wizard - ' . $competition->name">
@@ -48,6 +52,8 @@
         <x-ui.card class="max-w-4xl mx-auto">
             <form method="POST" action="{{ route('competitions.wizard.save', $competition) }}" x-data="{
                 selected: @js(array_map('strval', $selectedIds)),
+                seeds: @js(collect($participants)->mapWithKeys(fn ($p, $i) => [(string) $p->id => (int) ($seeds[$p->id] ?? ($i + 1))])->all()),
+                groupCount: {{ (int) $groupCount }},
                 toggle(id) {
                     id = String(id);
                     if (this.selected.includes(id)) {
@@ -56,14 +62,94 @@
                         this.selected.push(id);
                     }
                 },
-                isSelected(id) { return this.selected.includes(String(id)); }
+                isSelected(id) { return this.selected.includes(String(id)); },
+                selectAll() {
+                    this.selected = @js($participants->pluck('id')->map(fn ($id) => (string) $id)->values()->all());
+                },
+                clearAll() { this.selected = []; },
+                randomizeSeeds() {
+                    const ids = this.selected.length
+                        ? [...this.selected]
+                        : Object.keys(this.seeds);
+                    const order = ids.map((_, i) => i + 1);
+                    for (let i = order.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [order[i], order[j]] = [order[j], order[i]];
+                    }
+                    ids.forEach((id, index) => {
+                        this.seeds[String(id)] = order[index];
+                    });
+                },
+                perGroup() {
+                    if (!this.groupCount || this.groupCount < 1) return 0;
+                    return Math.floor(this.selected.length / this.groupCount);
+                }
             }">
                 @csrf
                 <input type="hidden" name="step" value="2">
 
-                <div class="mb-4 flex items-center justify-between">
+                @if ($isGroupKnockout)
+                    <div class="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                        <p class="mb-3 text-sm font-semibold text-secondary dark:text-white">Pengaturan Grup + Eliminasi</p>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="group_count" class="form-label">Jumlah Grup</label>
+                                <input
+                                    type="number"
+                                    id="group_count"
+                                    name="group_count"
+                                    x-model.number="groupCount"
+                                    value="{{ $groupCount }}"
+                                    min="2"
+                                    max="16"
+                                    class="form-input"
+                                    required
+                                >
+                                @error('group_count')<p class="mt-1 text-sm text-red-500">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label for="qualify_per_group" class="form-label">Lolos per Grup</label>
+                                <input
+                                    type="number"
+                                    id="qualify_per_group"
+                                    name="qualify_per_group"
+                                    value="{{ $qualifyPerGroup }}"
+                                    min="1"
+                                    max="4"
+                                    class="form-input"
+                                >
+                                <p class="mt-1 text-xs text-slate-500">Peserta terbaik tiap grup masuk fase knockout.</p>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-xs text-slate-500">
+                            <span x-text="selected.length"></span> peserta ·
+                            ~<span x-text="perGroup()"></span> orang/grup
+                            (minimal 2 orang per grup)
+                        </p>
+                    </div>
+                @endif
+
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <p class="text-sm text-slate-500">Pilih minimal 2 peserta untuk lomba ini.</p>
-                    <span class="text-sm font-medium text-primary" x-text="selected.length + ' dipilih'"></span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-medium text-primary" x-text="selected.length + ' dipilih'"></span>
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-secondary hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                            @click="selectAll()"
+                        >
+                            Pilih semua
+                        </button>
+                        <button
+                            type="button"
+                            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-secondary hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                            @click="randomizeSeeds()"
+                            title="Acak nomor seed peserta yang dipilih"
+                        >
+                            <i data-lucide="shuffle" class="h-3.5 w-3.5"></i>
+                            Acak Seed
+                        </button>
+                    </div>
                 </div>
 
                 @if ($participants->isEmpty())
@@ -90,12 +176,12 @@
                                     <p class="font-medium">{{ $participant->name }}</p>
                                     <p class="text-xs text-slate-500">{{ $participant->category->name ?? '-' }} · {{ $participant->team ?? '-' }}</p>
                                 </div>
-                                <div>
+                                <div @click.stop>
                                     <label class="text-xs text-slate-500">Seed</label>
                                     <input
                                         type="number"
                                         name="seeds[{{ $participant->id }}]"
-                                        value="{{ $seeds[$participant->id] ?? $loop->iteration }}"
+                                        x-model.number="seeds['{{ $participant->id }}']"
                                         min="1"
                                         class="form-input w-16 py-1 text-center"
                                     >
@@ -134,14 +220,25 @@
                             <input type="checkbox" name="generate_bracket" value="1" class="mt-1 rounded border-slate-300 text-primary focus:ring-primary" @checked(old('generate_bracket'))>
                             <div>
                                 <p class="font-medium text-secondary dark:text-white">Generate Bracket Otomatis</p>
-                                <p class="text-sm text-slate-500">Buat bracket knockout berdasarkan peserta yang sudah dipilih.</p>
+                                <p class="text-sm text-slate-500">
+                                    @if ($isGroupKnockout)
+                                        Buat fase grup + bracket knockout berdasarkan pengaturan grup.
+                                    @else
+                                        Buat bracket berdasarkan peserta yang sudah dipilih.
+                                    @endif
+                                </p>
                             </div>
                         </label>
                     </div>
 
                     <div class="rounded-lg bg-slate-50 p-4 dark:bg-slate-900/50">
                         <p class="text-sm font-medium text-secondary dark:text-white">Ringkasan</p>
-                        <p class="mt-1 text-sm text-slate-500">{{ $competition->participants->count() }} peserta terdaftar · Sistem: {{ $competition->system->label() }}</p>
+                        <p class="mt-1 text-sm text-slate-500">
+                            {{ $competition->participants->count() }} peserta terdaftar · Sistem: {{ $competition->system->label() }}
+                            @if ($isGroupKnockout)
+                                · {{ $competition->config['group_count'] ?? 4 }} grup · {{ $competition->config['qualify_per_group'] ?? 2 }} lolos/grup
+                            @endif
+                        </p>
                     </div>
                 </div>
 

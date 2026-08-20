@@ -186,10 +186,26 @@
         @endif
 
     @elseif ($tab === 'bracket')
-        @if ($competition->system === \App\Enums\CompetitionSystem::Point)
-            @include('brackets.partials.point-system', ['rounds' => $rounds ?? collect(), 'competition' => $competition])
+        @if ($competition->system === \App\Enums\CompetitionSystem::Point || $competition->system === \App\Enums\CompetitionSystem::League)
+            @include('brackets.partials.point-system', [
+                'rounds' => $rounds ?? collect(),
+                'competition' => $competition,
+                'canRandomizeMatches' => $canRandomizeMatches ?? false,
+            ])
+        @elseif ($competition->system === \App\Enums\CompetitionSystem::GroupKnockout)
+            @include('brackets.partials.group-knockout', [
+                'rounds' => $rounds ?? collect(),
+                'competition' => $competition,
+                'groupEntries' => $groupEntries ?? collect(),
+                'canRandomizeMatches' => $canRandomizeMatches ?? false,
+            ])
         @else
-            @include('brackets.partials.visual', ['rounds' => $rounds ?? collect(), 'competition' => $competition, 'showGenerate' => false])
+            @include('brackets.partials.visual', [
+                'rounds' => $rounds ?? collect(),
+                'competition' => $competition,
+                'showGenerate' => true,
+                'canRandomizeMatches' => $canRandomizeMatches ?? false,
+            ])
         @endif
 
     @elseif ($tab === 'ranking')

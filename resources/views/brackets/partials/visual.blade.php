@@ -4,15 +4,28 @@
         description="Generate bracket untuk memulai pertandingan knockout."
         icon="git-branch"
     >
-        @if ($showGenerate ?? true)
+        @if (($showGenerate ?? true) || ($canRandomizeMatches ?? false))
             <x-slot:action>
-                <form action="{{ route('brackets.generate', $competition) }}" method="POST">
-                    @csrf
-                    <x-ui.button type="submit">
-                        <i data-lucide="zap" class="h-4 w-4"></i>
-                        Generate Bracket
-                    </x-ui.button>
-                </form>
+                <div class="flex flex-wrap justify-center gap-2">
+                    @if ($canRandomizeMatches ?? false)
+                        <form action="{{ route('brackets.randomize', $competition) }}" method="POST" onsubmit="return confirm('Acak ulang urutan peserta?')">
+                            @csrf
+                            <x-ui.button variant="outline" type="submit">
+                                <i data-lucide="shuffle" class="h-4 w-4"></i>
+                                Acak Peserta
+                            </x-ui.button>
+                        </form>
+                    @endif
+                    @if ($showGenerate ?? true)
+                        <form action="{{ route('brackets.generate', $competition) }}" method="POST">
+                            @csrf
+                            <x-ui.button type="submit">
+                                <i data-lucide="zap" class="h-4 w-4"></i>
+                                Generate Bracket
+                            </x-ui.button>
+                        </form>
+                    @endif
+                </div>
             </x-slot:action>
         @endif
     </x-ui.empty-state>
@@ -148,6 +161,12 @@
                 <button type="button" @click="resetZoom()" class="bracket-tool-btn bracket-tool-btn--label"><span x-text="zoom + '%'"></span></button>
                 <button type="button" @click="zoomIn()" class="bracket-tool-btn" title="Zoom in"><i data-lucide="zoom-in" class="h-4 w-4"></i></button>
                 <button type="button" @click="toggleFullscreen()" class="bracket-tool-btn" title="Fullscreen"><i data-lucide="maximize-2" class="h-4 w-4"></i></button>
+                @if ($canRandomizeMatches ?? false)
+                    <form action="{{ route('brackets.randomize', $competition) }}" method="POST" onsubmit="return confirm('Acak ulang peserta? Seed dan pasangan akan diganti.')">
+                        @csrf
+                        <button type="submit" class="bracket-tool-btn" title="Acak peserta"><i data-lucide="shuffle" class="h-4 w-4"></i></button>
+                    </form>
+                @endif
                 @if ($showGenerate ?? true)
                     <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate bracket? Data pertandingan lama akan diganti.')">
                         @csrf

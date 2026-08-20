@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified', 'event'])->group(function () {
 
     Route::get('competitions/{competition}/bracket', [BracketController::class, 'show'])->name('brackets.show');
     Route::post('competitions/{competition}/bracket/generate', [BracketController::class, 'generate'])->name('brackets.generate');
+    Route::post('competitions/{competition}/bracket/randomize', [BracketController::class, 'randomize'])->name('brackets.randomize');
     Route::put('competitions/{competition}/bracket', [BracketController::class, 'update'])->name('brackets.update');
 
     Route::get('competitions/{competition}/ranking', [RankingController::class, 'competition'])->name('rankings.competition');

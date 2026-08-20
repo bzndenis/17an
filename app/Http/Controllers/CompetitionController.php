@@ -109,11 +109,17 @@ class CompetitionController extends Controller
         $step = (int) $request->input('step', 1);
 
         $validated = $request->validate(match ($step) {
-            2 => [
+            2 => array_filter([
                 'participant_ids' => ['required', 'array', 'min:2'],
                 'participant_ids.*' => ['exists:participants,id'],
                 'seeds' => ['nullable', 'array'],
-            ],
+                'group_count' => $competition->system === \App\Enums\CompetitionSystem::GroupKnockout
+                    ? ['required', 'integer', 'min:2', 'max:16']
+                    : ['nullable'],
+                'qualify_per_group' => $competition->system === \App\Enums\CompetitionSystem::GroupKnockout
+                    ? ['nullable', 'integer', 'min:1', 'max:4']
+                    : ['nullable'],
+            ]),
             3 => [
                 'status' => ['nullable', 'string'],
                 'generate_bracket' => ['nullable', 'boolean'],
@@ -143,8 +149,6 @@ class CompetitionController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()
-            ->route('competitions.show', ['competition' => $competition, 'tab' => 'matches'])
-            ->with('success', 'Pasangan pertandingan berhasil di-random ulang.');
+        return back()->with('success', 'Peserta berhasil diacak ulang.');
     }
 }

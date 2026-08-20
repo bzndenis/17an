@@ -31,12 +31,22 @@
                     <span class="text-slate-500">Pertandingan Selesai</span>
                     <span class="font-semibold">{{ $progress }}%</span>
                 </div>
-                <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate semua pertandingan? Data lama akan diganti.')">
-                    @csrf
-                    <button type="submit" class="text-sm text-red-500 hover:text-red-700 flex items-center gap-1">
-                        <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Regenerate
-                    </button>
-                </form>
+                <div class="flex items-center gap-3">
+                    @if ($canRandomizeMatches ?? false)
+                        <form action="{{ route('brackets.randomize', $competition) }}" method="POST" onsubmit="return confirm('Acak ulang pasangan pertandingan?')">
+                            @csrf
+                            <button type="submit" class="text-sm text-primary hover:text-primary/80 flex items-center gap-1">
+                                <i data-lucide="shuffle" class="h-3.5 w-3.5"></i> Acak
+                            </button>
+                        </form>
+                    @endif
+                    <form action="{{ route('brackets.generate', $competition) }}" method="POST" onsubmit="return confirm('Regenerate semua pertandingan? Data lama akan diganti.')">
+                        @csrf
+                        <button type="submit" class="text-sm text-red-500 hover:text-red-700 flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i> Regenerate
+                        </button>
+                    </form>
+                </div>
             </div>
             <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
                 <div class="bg-primary-500 h-2 rounded-full transition-all" style="width: {{ $progress }}%"></div>

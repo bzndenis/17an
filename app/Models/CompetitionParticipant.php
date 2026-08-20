@@ -11,12 +11,14 @@ class CompetitionParticipant extends Model
         'competition_id',
         'participant_id',
         'seed',
+        'group_number',
     ];
 
     protected function casts(): array
     {
         return [
             'seed' => 'integer',
+            'group_number' => 'integer',
         ];
     }
 

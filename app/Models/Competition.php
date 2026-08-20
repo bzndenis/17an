@@ -51,7 +51,7 @@ class Competition extends Model
     public function participants(): BelongsToMany
     {
         return $this->belongsToMany(Participant::class, 'competition_participants')
-            ->withPivot('seed')
+            ->withPivot('seed', 'group_number')
             ->withTimestamps();
     }
 
