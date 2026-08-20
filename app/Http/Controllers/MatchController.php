@@ -42,17 +42,31 @@ class MatchController extends Controller
         $match = $this->matchService->findForEvent($match->id);
 
         $validated = $request->validate([
-            'scores' => ['required', 'array'],
+            'scores' => ['nullable', 'array'],
             'scores.*' => ['integer', 'min:0'],
+            'side_scores' => ['nullable', 'array'],
+            'side_scores.*' => ['integer', 'min:0'],
             'winner_id' => ['nullable', 'exists:participants,id'],
+            'winner_side' => ['nullable', 'integer', 'min:1', 'max:2'],
             'notes' => ['nullable', 'string'],
             'finish' => ['nullable', 'boolean'],
         ]);
 
+        if (empty($validated['scores']) && empty($validated['side_scores'])) {
+            return back()->withErrors(['scores' => 'Skor wajib diisi.'])->withInput();
+        }
+
         $this->matchService->updateResult($match, $validated);
 
         if ($request->boolean('finish')) {
-            $this->matchService->finishMatch($match, $validated['winner_id'] ?? null, $validated['notes'] ?? null);
+            $winnerId = $validated['winner_id'] ?? null;
+            if (! $winnerId && isset($validated['winner_side'])) {
+                $winnerId = $match->matchParticipants()
+                    ->where('side', (int) $validated['winner_side'])
+                    ->value('participant_id');
+            }
+
+            $this->matchService->finishMatch($match, $winnerId, $validated['notes'] ?? null);
 
             return back()->with('success', 'Hasil pertandingan berhasil disimpan dan pertandingan selesai.');
         }

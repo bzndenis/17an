@@ -56,33 +56,42 @@ class PointSystemService
         }
 
         $config = $match->competition->config ?? [];
-        $sorted = $participants->sortByDesc('score')->values();
-        $topScore = $sorted[0]->score;
-        $secondScore = $sorted[1]->score ?? $topScore;
-        $isDraw = $topScore === $secondScore;
+        $sides = $participants->groupBy(fn ($mp) => $mp->side ?? $mp->id);
 
-        DB::transaction(function () use ($match, $sorted, $isDraw, $config) {
-            foreach ($sorted as $index => $mp) {
-                $ranking = Ranking::firstOrCreate(
-                    [
-                        'competition_id' => $match->competition_id,
-                        'participant_id' => $mp->participant_id,
-                    ]
-                );
+        if ($sides->count() < 2) {
+            return;
+        }
 
-                $isWin = ! $isDraw && $index === 0;
-                $isLoss = ! $isDraw && $index > 0;
+        $sideScores = $sides->map(fn ($group) => (int) $group->first()->score);
+        $maxScore = $sideScores->max();
+        $sidesWithMax = $sideScores->filter(fn ($score) => $score === $maxScore);
+        $isDraw = $sidesWithMax->count() > 1;
+
+        DB::transaction(function () use ($match, $sides, $sideScores, $maxScore, $isDraw, $config) {
+            foreach ($sides as $side => $members) {
+                $score = $sideScores[$side];
+                $isWin = ! $isDraw && $score === $maxScore;
+                $isLoss = ! $isDraw && $score < $maxScore;
                 $points = $this->calculatePoints($isWin, $isDraw, $config);
 
-                $ranking->increment('played');
-                $ranking->increment('points', $points);
+                foreach ($members as $mp) {
+                    $ranking = Ranking::firstOrCreate(
+                        [
+                            'competition_id' => $match->competition_id,
+                            'participant_id' => $mp->participant_id,
+                        ]
+                    );
 
-                if ($isWin) {
-                    $ranking->increment('won');
-                } elseif ($isDraw) {
-                    $ranking->increment('drawn');
-                } elseif ($isLoss) {
-                    $ranking->increment('lost');
+                    $ranking->increment('played');
+                    $ranking->increment('points', $points);
+
+                    if ($isWin) {
+                        $ranking->increment('won');
+                    } elseif ($isDraw) {
+                        $ranking->increment('drawn');
+                    } elseif ($isLoss) {
+                        $ranking->increment('lost');
+                    }
                 }
             }
         });

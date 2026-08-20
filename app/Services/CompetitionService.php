@@ -120,13 +120,19 @@ class CompetitionService
 
     protected function saveWizardParticipants(Competition $competition, array $data): Competition
     {
+        $config = $competition->config ?? [];
+
+        if (isset($data['players_per_side'])) {
+            $config['players_per_side'] = max(1, (int) $data['players_per_side']);
+        }
+
         if ($competition->system === \App\Enums\CompetitionSystem::GroupKnockout) {
-            $competition = $this->update($competition, [
-                'config' => array_merge($competition->config ?? [], [
-                    'group_count' => max(2, (int) ($data['group_count'] ?? 2)),
-                    'qualify_per_group' => max(1, (int) ($data['qualify_per_group'] ?? 2)),
-                ]),
-            ]);
+            $config['group_count'] = max(2, (int) ($data['group_count'] ?? ($config['group_count'] ?? 2)));
+            $config['qualify_per_group'] = max(1, (int) ($data['qualify_per_group'] ?? ($config['qualify_per_group'] ?? 2)));
+        }
+
+        if ($config !== ($competition->config ?? [])) {
+            $competition = $this->update($competition, ['config' => $config]);
         }
 
         $competition = $this->syncParticipants(

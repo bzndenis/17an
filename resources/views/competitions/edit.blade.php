@@ -42,6 +42,17 @@
                 </div>
 
                 <div>
+                    <label for="players_per_side" class="form-label">Format Main</label>
+                    <select id="players_per_side" name="players_per_side" class="form-select">
+                        @foreach ([1, 2, 3, 4, 5] as $n)
+                            <option value="{{ $n }}" @selected(old('players_per_side', $competition->playersPerSide()) == $n)>
+                                {{ $n === 1 ? '1 vs 1 (perorangan)' : "{$n} vs {$n} (tim)" }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
                     <label for="status" class="form-label">Status</label>
                     <select id="status" name="status" class="form-select">
                         @foreach (CompetitionStatus::cases() as $status)

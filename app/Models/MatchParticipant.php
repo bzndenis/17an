@@ -10,6 +10,7 @@ class MatchParticipant extends Model
     protected $fillable = [
         'match_id',
         'participant_id',
+        'side',
         'score',
         'is_winner',
     ];
@@ -17,6 +18,7 @@ class MatchParticipant extends Model
     protected function casts(): array
     {
         return [
+            'side' => 'integer',
             'score' => 'integer',
             'is_winner' => 'boolean',
         ];

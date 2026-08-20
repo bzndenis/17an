@@ -68,16 +68,37 @@ class MatchService
     public function updateResult(GameMatch $match, array $data): GameMatch
     {
         return DB::transaction(function () use ($match, $data) {
-            foreach ($data['scores'] ?? [] as $participantId => $score) {
-                $match->matchParticipants()
-                    ->where('participant_id', $participantId)
-                    ->update(['score' => (int) $score]);
+            $match->load('matchParticipants');
+
+            if (isset($data['side_scores']) && is_array($data['side_scores'])) {
+                foreach ($data['side_scores'] as $side => $score) {
+                    $match->matchParticipants()
+                        ->where('side', (int) $side)
+                        ->update(['score' => (int) $score]);
+                }
+            } else {
+                foreach ($data['scores'] ?? [] as $participantId => $score) {
+                    $match->matchParticipants()
+                        ->where('participant_id', $participantId)
+                        ->update(['score' => (int) $score]);
+                }
             }
 
-            if (isset($data['winner_id'])) {
+            $winnerId = $data['winner_id'] ?? null;
+            if (! $winnerId && isset($data['winner_side'])) {
+                $winnerId = $match->matchParticipants()
+                    ->where('side', (int) $data['winner_side'])
+                    ->value('participant_id');
+            }
+
+            if ($winnerId) {
+                $side = $match->matchParticipants()
+                    ->where('participant_id', $winnerId)
+                    ->value('side') ?? 1;
+
                 $match->matchParticipants()->update(['is_winner' => false]);
                 $match->matchParticipants()
-                    ->where('participant_id', $data['winner_id'])
+                    ->where('side', $side)
                     ->update(['is_winner' => true]);
             }
 
@@ -95,14 +116,19 @@ class MatchService
             $match->load(['matchParticipants', 'competition', 'round']);
 
             if (! $winnerId) {
-                $winner = $match->matchParticipants->sortByDesc('score')->first();
-                $winnerId = $winner?->participant_id;
+                $sides = $match->matchParticipants->groupBy(fn ($mp) => $mp->side ?? $mp->participant_id);
+                $topSide = $sides->sortByDesc(fn ($group) => $group->first()->score)->first();
+                $winnerId = $topSide?->first()?->participant_id;
             }
 
             if ($winnerId) {
+                $side = $match->matchParticipants
+                    ->firstWhere('participant_id', $winnerId)
+                    ?->side ?? 1;
+
                 $match->matchParticipants()->update(['is_winner' => false]);
                 $match->matchParticipants()
-                    ->where('participant_id', $winnerId)
+                    ->where('side', $side)
                     ->update(['is_winner' => true]);
             }
 

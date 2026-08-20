@@ -42,6 +42,19 @@
                 </div>
 
                 <div>
+                    <label for="players_per_side" class="form-label">Format Main <span class="text-red-500">*</span></label>
+                    <select id="players_per_side" name="players_per_side" class="form-select" required>
+                        <option value="1" @selected(old('players_per_side', '1') == '1')>1 vs 1 (perorangan)</option>
+                        <option value="2" @selected(old('players_per_side') == '2')>2 vs 2 (tim)</option>
+                        <option value="3" @selected(old('players_per_side') == '3')>3 vs 3 (tim)</option>
+                        <option value="4" @selected(old('players_per_side') == '4')>4 vs 4 (tim)</option>
+                        <option value="5" @selected(old('players_per_side') == '5')>5 vs 5 (tim)</option>
+                    </select>
+                    <p class="mt-1 text-xs text-slate-500">Berapa orang per sisi dalam satu pertandingan.</p>
+                    @error('players_per_side')<p class="mt-1 text-sm text-red-500">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
                     <label for="status" class="form-label">Status</label>
                     <select id="status" name="status" class="form-select">
                         @foreach (CompetitionStatus::cases() as $status)

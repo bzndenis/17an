@@ -44,27 +44,66 @@ class BracketService
     public function advanceWinner(GameMatch $match, int $winnerParticipantId): void
     {
         DB::transaction(function () use ($match, $winnerParticipantId) {
+            $match->load('matchParticipants');
+
+            $winnerRow = $match->matchParticipants
+                ->firstWhere('participant_id', $winnerParticipantId);
+
+            $winningSide = $winnerRow?->side ?? 1;
+
             $match->matchParticipants()->update(['is_winner' => false]);
             $match->matchParticipants()
-                ->where('participant_id', $winnerParticipantId)
+                ->where('side', $winningSide)
                 ->update(['is_winner' => true]);
+
+            $winningIds = $match->matchParticipants()
+                ->where('side', $winningSide)
+                ->pluck('participant_id');
 
             if ($match->next_match_id) {
                 $nextMatch = GameMatch::find($match->next_match_id);
                 if ($nextMatch) {
-                    MatchParticipant::firstOrCreate(
-                        ['match_id' => $nextMatch->id, 'participant_id' => $winnerParticipantId],
-                        ['score' => 0, 'is_winner' => false]
-                    );
+                    $nextSide = $this->resolveNextMatchSide($match, $nextMatch);
+
+                    foreach ($winningIds as $participantId) {
+                        MatchParticipant::updateOrCreate(
+                            ['match_id' => $nextMatch->id, 'participant_id' => $participantId],
+                            ['score' => 0, 'is_winner' => false, 'side' => $nextSide]
+                        );
+                    }
                 }
             }
 
             $this->activityLogService->log(
                 'bracket.advanced',
                 "Pemenang pertandingan #{$match->match_number} maju ke babak berikutnya.",
-                ['match_id' => $match->id, 'winner_id' => $winnerParticipantId]
+                ['match_id' => $match->id, 'winner_id' => $winnerParticipantId, 'side' => $winningSide]
             );
         });
+    }
+
+    protected function resolveNextMatchSide(GameMatch $fromMatch, GameMatch $nextMatch): int
+    {
+        $feeders = GameMatch::where('next_match_id', $nextMatch->id)
+            ->orderBy('bracket_position')
+            ->orderBy('match_number')
+            ->pluck('id')
+            ->values();
+
+        $feederIndex = $feeders->search($fromMatch->id);
+        $preferred = ($feederIndex === false || $feederIndex === 0) ? 1 : 2;
+
+        $occupied = MatchParticipant::where('match_id', $nextMatch->id)
+            ->pluck('side')
+            ->unique()
+            ->filter()
+            ->all();
+
+        if (in_array($preferred, $occupied, true) && ! in_array($preferred === 1 ? 2 : 1, $occupied, true)) {
+            return $preferred === 1 ? 2 : 1;
+        }
+
+        return $preferred;
     }
 
     public function resetBracket(Competition $competition): void
@@ -111,27 +150,24 @@ class BracketService
 
     protected function generateKnockoutBracket(Competition $competition): Collection
     {
-        $participantCount = $competition->participants()->count();
+        $units = $this->buildMatchUnits($competition);
+        $unitCount = $units->count();
 
-        if ($participantCount < 2) {
-            throw new \RuntimeException('Minimal 2 peserta diperlukan.');
+        if ($unitCount < 2) {
+            $perSide = $competition->playersPerSide();
+            throw new \RuntimeException(
+                $perSide > 1
+                    ? "Minimal 2 tim diperlukan (setidaknya ".($perSide * 2)." peserta untuk format {$perSide} vs {$perSide})."
+                    : 'Minimal 2 peserta diperlukan.'
+            );
         }
 
-        $bracketSize = (int) pow(2, (int) ceil(log($participantCount, 2)));
-
-        $participants = $competition->competitionParticipants()
-            ->with('participant')
-            ->orderBy('seed')
-            ->get()
-            ->pluck('participant.id')
-            ->toArray();
-
-        $seeded = $this->standardBracketSeeding($participants, $bracketSize);
+        $bracketSize = (int) pow(2, (int) ceil(log($unitCount, 2)));
+        $seeded = $this->standardBracketSeeding($units->all(), $bracketSize);
         $firstRoundSlots = $bracketSize / 2;
 
-        // Determine actual matches vs byes in the first round
-        $actualPairs = []; // slotIndex => [homeId, awayId]
-        $byeAdvances = []; // slotIndex => participantId
+        $actualPairs = [];
+        $byeAdvances = [];
 
         for ($i = 0; $i < $firstRoundSlots; $i++) {
             $home = $seeded[$i * 2] ?? null;
@@ -150,23 +186,21 @@ class BracketService
         $totalFullRounds = (int) log($bracketSize, 2);
         $roundNames = $this->getRoundNames($totalFullRounds);
 
-        // Create rounds — skip R1 if all are byes
         $startRound = $hasFirstRound ? 0 : 1;
         $rounds = collect();
 
         for ($i = $startRound; $i < $totalFullRounds; $i++) {
             $rounds->push(Round::create([
                 'competition_id' => $competition->id,
-                'name' => $roundNames[$i] ?? "Babak ".($i + 1),
+                'name' => $roundNames[$i] ?? 'Babak '.($i + 1),
                 'round_number' => $i + 1,
                 'type' => 'knockout',
             ]));
         }
 
-        // Create matches per round
         $allMatches = collect();
         $matchNumber = 1;
-        $matchesByFullRound = []; // indexed by full round index (0-based)
+        $matchesByFullRound = [];
 
         foreach ($rounds as $round) {
             $fullRoundIndex = $round->round_number - 1;
@@ -174,7 +208,6 @@ class BracketService
             $roundMatches = collect();
 
             if ($fullRoundIndex === 0 && $hasFirstRound) {
-                // R1: only create matches for actual pairs
                 foreach ($actualPairs as $slotIndex => $pair) {
                     $match = GameMatch::create([
                         'round_id' => $round->id,
@@ -186,14 +219,8 @@ class BracketService
                         'scheduled_at' => $competition->start_at,
                     ]);
 
-                    foreach ($pair as $pid) {
-                        MatchParticipant::create([
-                            'match_id' => $match->id,
-                            'participant_id' => $pid,
-                            'score' => 0,
-                            'is_winner' => false,
-                        ]);
-                    }
+                    $this->attachUnit($match, $pair[0], 1);
+                    $this->attachUnit($match, $pair[1], 2);
 
                     $roundMatches->push($match);
                     $allMatches->push($match);
@@ -218,14 +245,13 @@ class BracketService
             $matchesByFullRound[$fullRoundIndex] = $roundMatches;
         }
 
-        // Link next_match_id for rounds R2+ (non-R1 standard rounds)
         $fullRoundKeys = array_keys($matchesByFullRound);
         for ($k = 0; $k < count($fullRoundKeys) - 1; $k++) {
             $curKey = $fullRoundKeys[$k];
             $nextKey = $fullRoundKeys[$k + 1];
 
             if ($curKey === 0 && $hasFirstRound) {
-                continue; // R1 linking handled separately below
+                continue;
             }
 
             $curMatches = $matchesByFullRound[$curKey];
@@ -239,7 +265,6 @@ class BracketService
             }
         }
 
-        // Link R1 matches → R2 using original slot index
         if ($hasFirstRound && isset($matchesByFullRound[1])) {
             $r2Matches = $matchesByFullRound[1];
             $actualSlots = array_keys($actualPairs);
@@ -253,22 +278,89 @@ class BracketService
             }
         }
 
-        // Place bye advances into the appropriate second-round match
         $secondRoundKey = $hasFirstRound ? 1 : $startRound;
         if (isset($matchesByFullRound[$secondRoundKey])) {
             $targetMatches = $matchesByFullRound[$secondRoundKey];
-            foreach ($byeAdvances as $slotIndex => $pid) {
+            foreach ($byeAdvances as $slotIndex => $unit) {
                 $targetIdx = (int) floor($slotIndex / 2);
                 if (isset($targetMatches[$targetIdx])) {
-                    MatchParticipant::firstOrCreate(
-                        ['match_id' => $targetMatches[$targetIdx]->id, 'participant_id' => $pid],
-                        ['score' => 0, 'is_winner' => false]
-                    );
+                    $side = ($slotIndex % 2 === 0) ? 1 : 2;
+                    $this->attachUnit($targetMatches[$targetIdx], $unit, $side);
                 }
             }
         }
 
         return $allMatches;
+    }
+
+    /**
+     * @return Collection<int, array{ids: array<int, int>, label: string}>
+     */
+    public function buildMatchUnits(Competition $competition): Collection
+    {
+        $entries = $competition->competitionParticipants()
+            ->with('participant')
+            ->orderByRaw('seed IS NULL, seed ASC')
+            ->orderBy('id')
+            ->get();
+
+        return $this->buildMatchUnitsFromEntries($entries, $competition->playersPerSide());
+    }
+
+    /**
+     * @param  Collection<int, CompetitionParticipant>  $entries
+     * @return Collection<int, array{ids: array<int, int>, label: string}>
+     */
+    public function buildMatchUnitsFromEntries(Collection $entries, int $playersPerSide): Collection
+    {
+        $playersPerSide = max(1, $playersPerSide);
+
+        if ($playersPerSide === 1) {
+            return $entries->map(fn (CompetitionParticipant $entry) => [
+                'ids' => [$entry->participant_id],
+                'label' => $entry->participant->name ?? 'Peserta',
+            ])->values();
+        }
+
+        $namedTeams = $entries
+            ->filter(fn (CompetitionParticipant $entry) => filled($entry->participant?->team))
+            ->groupBy(fn (CompetitionParticipant $entry) => $entry->participant->team)
+            ->filter(fn (Collection $group) => $group->count() === $playersPerSide);
+
+        if ($namedTeams->isNotEmpty() && $namedTeams->sum(fn (Collection $g) => $g->count()) === $entries->count()) {
+            return $namedTeams->map(fn (Collection $group, string $team) => [
+                'ids' => $group->pluck('participant_id')->all(),
+                'label' => $team,
+            ])->values();
+        }
+
+        if ($entries->count() % $playersPerSide !== 0) {
+            throw new \RuntimeException(
+                "Jumlah peserta harus kelipatan {$playersPerSide} untuk format {$playersPerSide} vs {$playersPerSide}."
+            );
+        }
+
+        return $entries->chunk($playersPerSide)->values()->map(function (Collection $chunk) {
+            $names = $chunk->map(fn (CompetitionParticipant $entry) => $entry->participant->name ?? '?')->implode(' & ');
+
+            return [
+                'ids' => $chunk->pluck('participant_id')->all(),
+                'label' => $names,
+            ];
+        });
+    }
+
+    /**
+     * @param  array{ids: array<int, int>, label?: string}  $unit
+     */
+    protected function attachUnit(GameMatch $match, array $unit, int $side): void
+    {
+        foreach ($unit['ids'] as $participantId) {
+            MatchParticipant::updateOrCreate(
+                ['match_id' => $match->id, 'participant_id' => $participantId],
+                ['side' => $side, 'score' => 0, 'is_winner' => false]
+            );
+        }
     }
 
     // ─── Group + Knockout ───────────────────────────────────────
@@ -282,15 +374,17 @@ class BracketService
             ->orderBy('seed')
             ->get();
 
-        $minParticipants = $groupCount * 2;
+        $minParticipants = $groupCount * 2 * $competition->playersPerSide();
         if ($entries->count() < $minParticipants) {
-            throw new \RuntimeException("Minimal {$minParticipants} peserta diperlukan untuk {$groupCount} grup.");
+            throw new \RuntimeException("Minimal {$minParticipants} peserta diperlukan untuk {$groupCount} grup (format {$competition->matchFormatLabel()}).");
         }
 
         $groups = $this->assignParticipantsToGroups($entries, $groupCount);
         $allMatches = collect();
         $matchNumber = 1;
         $roundNumber = 1;
+
+        $playersPerSide = $competition->playersPerSide();
 
         foreach ($groups as $groupNum => $participantIds) {
             $round = Round::create([
@@ -300,10 +394,22 @@ class BracketService
                 'type' => 'group',
             ]);
 
-            $ids = $participantIds->values()->all();
+            $groupEntries = $competition->competitionParticipants()
+                ->with('participant')
+                ->whereIn('participant_id', $participantIds->all())
+                ->orderByRaw('seed IS NULL, seed ASC')
+                ->get();
 
-            for ($i = 0; $i < count($ids); $i++) {
-                for ($j = $i + 1; $j < count($ids); $j++) {
+            $units = $this->buildMatchUnitsFromEntries($groupEntries, $playersPerSide);
+
+            if ($units->count() < 2) {
+                throw new \RuntimeException(
+                    "Grup {$this->groupLetter($groupNum)} minimal butuh 2 unit pertandingan."
+                );
+            }
+
+            for ($i = 0; $i < $units->count(); $i++) {
+                for ($j = $i + 1; $j < $units->count(); $j++) {
                     $match = GameMatch::create([
                         'round_id' => $round->id,
                         'competition_id' => $competition->id,
@@ -314,14 +420,8 @@ class BracketService
                         'scheduled_at' => $competition->start_at,
                     ]);
 
-                    foreach ([$ids[$i], $ids[$j]] as $pid) {
-                        MatchParticipant::create([
-                            'match_id' => $match->id,
-                            'participant_id' => $pid,
-                            'score' => 0,
-                            'is_winner' => false,
-                        ]);
-                    }
+                    $this->attachUnit($match, $units[$i], 1);
+                    $this->attachUnit($match, $units[$j], 2);
 
                     $allMatches->push($match);
                 }
@@ -428,12 +528,8 @@ class BracketService
                 continue;
             }
 
-            foreach ($actualPairs[$slot] as $pid) {
-                MatchParticipant::firstOrCreate(
-                    ['match_id' => $match->id, 'participant_id' => $pid],
-                    ['score' => 0, 'is_winner' => false]
-                );
-            }
+            $this->attachUnit($match, $this->normalizeUnit($actualPairs[$slot][0]), 1);
+            $this->attachUnit($match, $this->normalizeUnit($actualPairs[$slot][1]), 2);
         }
 
         $secondRound = $competition->rounds()
@@ -444,13 +540,11 @@ class BracketService
 
         if ($secondRound) {
             $secondMatches = $secondRound->matches()->orderBy('bracket_position')->orderBy('match_number')->get();
-            foreach ($byeAdvances as $slotIndex => $pid) {
+            foreach ($byeAdvances as $slotIndex => $unit) {
                 $targetIdx = (int) floor($slotIndex / 2);
                 if (isset($secondMatches[$targetIdx])) {
-                    MatchParticipant::firstOrCreate(
-                        ['match_id' => $secondMatches[$targetIdx]->id, 'participant_id' => $pid],
-                        ['score' => 0, 'is_winner' => false]
-                    );
+                    $side = ($slotIndex % 2 === 0) ? 1 : 2;
+                    $this->attachUnit($secondMatches[$targetIdx], $this->normalizeUnit($unit), $side);
                 }
             }
         }
@@ -465,14 +559,17 @@ class BracketService
     }
 
     /**
-     * @return Collection<int, int>
+     * @return Collection<int, array{ids: array<int, int>, label: string}>
      */
     protected function resolveGroupQualifiers(Competition $competition, int $qualifyPerGroup): Collection
     {
         $competition->loadMissing('rankings');
+        $playersPerSide = $competition->playersPerSide();
 
         $entries = $competition->competitionParticipants()
+            ->with('participant')
             ->whereNotNull('group_number')
+            ->orderByRaw('seed IS NULL, seed ASC')
             ->get()
             ->groupBy('group_number');
 
@@ -480,24 +577,45 @@ class BracketService
         $runners = collect();
 
         foreach ($entries->sortKeys() as $groupEntries) {
-            $ranked = $groupEntries->sort(function ($a, $b) use ($competition) {
-                $rankA = $competition->rankings->firstWhere('participant_id', $a->participant_id);
-                $rankB = $competition->rankings->firstWhere('participant_id', $b->participant_id);
+            $units = $this->buildMatchUnitsFromEntries($groupEntries, $playersPerSide);
 
-                return [$rankB?->points ?? 0, $rankB?->won ?? 0, -($b->seed ?? 999)]
-                    <=> [$rankA?->points ?? 0, $rankA?->won ?? 0, -($a->seed ?? 999)];
+            $ranked = $units->sort(function (array $a, array $b) use ($competition) {
+                $scoreA = collect($a['ids'])->sum(
+                    fn ($id) => $competition->rankings->firstWhere('participant_id', $id)?->points ?? 0
+                );
+                $scoreB = collect($b['ids'])->sum(
+                    fn ($id) => $competition->rankings->firstWhere('participant_id', $id)?->points ?? 0
+                );
+
+                return $scoreB <=> $scoreA;
             })->values();
 
-            foreach ($ranked->take($qualifyPerGroup) as $index => $entry) {
+            foreach ($ranked->take($qualifyPerGroup) as $index => $unit) {
                 if ($index === 0) {
-                    $winners->push($entry->participant_id);
+                    $winners->push($unit);
                 } else {
-                    $runners->push($entry->participant_id);
+                    $runners->push($unit);
                 }
             }
         }
 
         return $winners->concat($runners)->values();
+    }
+
+    /**
+     * @param  array{ids?: array<int, int>, label?: string}|int  $unit
+     * @return array{ids: array<int, int>, label: string}
+     */
+    protected function normalizeUnit(array|int $unit): array
+    {
+        if (is_array($unit)) {
+            return [
+                'ids' => array_values($unit['ids'] ?? []),
+                'label' => $unit['label'] ?? 'Tim',
+            ];
+        }
+
+        return ['ids' => [$unit], 'label' => 'Peserta'];
     }
 
     protected function createEmptyKnockoutStructure(
@@ -573,12 +691,22 @@ class BracketService
             'type' => 'league',
         ]);
 
-        $participantIds = $competition->participants()->pluck('participants.id')->toArray();
+        $units = $this->buildMatchUnits($competition);
+
+        if ($units->count() < 2) {
+            $perSide = $competition->playersPerSide();
+            throw new \RuntimeException(
+                $perSide > 1
+                    ? "Minimal 2 tim diperlukan untuk format {$perSide} vs {$perSide}."
+                    : 'Minimal 2 peserta diperlukan.'
+            );
+        }
+
         $allMatches = collect();
         $matchNumber = 1;
 
-        for ($i = 0; $i < count($participantIds); $i++) {
-            for ($j = $i + 1; $j < count($participantIds); $j++) {
+        for ($i = 0; $i < $units->count(); $i++) {
+            for ($j = $i + 1; $j < $units->count(); $j++) {
                 $match = GameMatch::create([
                     'round_id' => $round->id,
                     'competition_id' => $competition->id,
@@ -588,17 +716,8 @@ class BracketService
                     'scheduled_at' => $competition->start_at,
                 ]);
 
-                MatchParticipant::create([
-                    'match_id' => $match->id,
-                    'participant_id' => $participantIds[$i],
-                    'score' => 0,
-                ]);
-
-                MatchParticipant::create([
-                    'match_id' => $match->id,
-                    'participant_id' => $participantIds[$j],
-                    'score' => 0,
-                ]);
+                $this->attachUnit($match, $units[$i], 1);
+                $this->attachUnit($match, $units[$j], 2);
 
                 $allMatches->push($match);
             }

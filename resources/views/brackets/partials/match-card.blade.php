@@ -1,5 +1,6 @@
 @php
-    $participants = $match->matchParticipants;
+    $participants = $match->matchParticipants->sortBy('side')->values();
+    $sides = $participants->groupBy(fn ($mp) => $mp->side ?? 1);
     $isLive = $match->status->value === 'live';
     $isFinished = $match->status->value === 'finished';
     $winner = $participants->firstWhere('is_winner', true);
@@ -30,25 +31,27 @@
     </div>
 
     <div class="bracket-match__body">
-        @forelse ($participants as $mp)
+        @forelse ($sides as $side => $members)
             @php
-                $isWinner = $mp->is_winner;
-                $name = $mp->participant->name ?? null;
-                $initial = $name ? mb_strtoupper(mb_substr($name, 0, 1)) : '?';
+                $isWinner = $members->contains(fn ($mp) => $mp->is_winner);
+                $names = $members->map(fn ($mp) => $mp->participant->name ?? null)->filter()->values();
+                $label = $names->isNotEmpty() ? $names->implode(' & ') : null;
+                $initial = $label ? mb_strtoupper(mb_substr($names->first(), 0, 1)) : '?';
+                $score = $members->first()->score ?? 0;
             @endphp
             <div @class([
                 'bracket-match__row',
                 'bracket-match__row--winner' => $isWinner,
                 'bracket-match__row--loser' => $isFinished && ! $isWinner && $winner,
-                'bracket-match__row--empty' => ! $name,
+                'bracket-match__row--empty' => ! $label,
             ])>
                 <div class="bracket-match__player">
                     <span @class([
                         'bracket-match__avatar',
                         'bracket-match__avatar--winner' => $isWinner,
                     ])>{{ $initial }}</span>
-                    <span class="bracket-match__name" @if(! $name) title="{{ $emptyTitle }}" @endif>
-                        {{ $name ?? $emptyLabel }}
+                    <span class="bracket-match__name" @if(! $label) title="{{ $emptyTitle }}" @endif>
+                        {{ $label ?? $emptyLabel }}
                     </span>
                     @if ($isWinner && ($isFinal ?? false))
                         <i data-lucide="trophy" class="bracket-match__trophy h-3.5 w-3.5"></i>
@@ -58,7 +61,7 @@
                     'bracket-match__score',
                     'bracket-match__score--winner' => $isWinner,
                 ])>
-                    {{ $name ? ($mp->score ?? 0) : '–' }}
+                    {{ $label ? $score : '–' }}
                 </span>
             </div>
         @empty

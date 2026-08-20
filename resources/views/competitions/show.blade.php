@@ -165,9 +165,14 @@
                                 <td class="font-mono">{{ $match->match_number }}</td>
                                 <td>{{ $match->round->name ?? '-' }}</td>
                                 <td>
-                                    @foreach ($match->matchParticipants as $mp)
-                                        <span class="{{ $mp->is_winner ? 'font-semibold text-primary' : '' }}">{{ $mp->participant->name ?? 'TBD' }}</span>
-                                        @if (!$loop->last) <span class="text-slate-400"> vs </span> @endif
+                                    @php
+                                        $matchSides = $match->matchParticipants->groupBy(fn ($mp) => $mp->side ?? $mp->id);
+                                    @endphp
+                                    @foreach ($matchSides as $sideMembers)
+                                        <span class="{{ $sideMembers->contains(fn ($mp) => $mp->is_winner) ? 'font-semibold text-primary' : '' }}">
+                                            {{ $sideMembers->map(fn ($mp) => $mp->participant->name ?? 'TBD')->implode(' & ') }}
+                                        </span>
+                                        @if (! $loop->last) <span class="text-slate-400"> vs </span> @endif
                                     @endforeach
                                 </td>
                                 <td>

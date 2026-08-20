@@ -30,6 +30,7 @@ class StoreCompetitionRequest extends FormRequest
             'prize_3' => ['nullable', 'string', 'max:255'],
             'banner' => ['nullable', 'image', 'max:4096'],
             'config' => ['nullable', 'array'],
+            'players_per_side' => ['nullable', 'integer', 'min:1', 'max:10'],
         ];
     }
 

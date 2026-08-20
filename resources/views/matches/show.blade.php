@@ -1,5 +1,9 @@
+@php
+    $sides = $match->matchParticipants->sortBy('side')->groupBy(fn ($mp) => $mp->side ?? 1);
+@endphp
+
 <x-app-layout :title="'Pertandingan #' . $match->match_number">
-    <x-ui.page-header :title="'Pertandingan #' . $match->match_number" :description="($match->competition->name ?? '') . ' · ' . ($match->round->name ?? '')">
+    <x-ui.page-header :title="'Pertandingan #' . $match->match_number" :description="($match->competition->name ?? '') . ' · ' . ($match->round->name ?? '') . ' · ' . $match->competition->matchFormatLabel()">
         <x-slot:actions>
             <x-ui.button variant="outline" :href="route('matches.index')">Kembali</x-ui.button>
             @if ($match->status->value !== 'finished')
@@ -12,7 +16,6 @@
     </x-ui.page-header>
 
     <div class="grid gap-6 lg:grid-cols-3">
-        {{-- Match card --}}
         <x-ui.card class="lg:col-span-2">
             <div class="mb-4 flex items-center justify-between">
                 <x-ui.badge :variant="$match->status->value === 'live' ? 'live' : ($match->status->value === 'finished' ? 'success' : 'info')" size="lg">
@@ -24,31 +27,39 @@
             </div>
 
             <div class="space-y-4">
-                @foreach ($match->matchParticipants as $mp)
-                    <div class="flex items-center justify-between rounded-xl border p-4 {{ $mp->is_winner ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700' }}">
-                        <div class="flex items-center gap-4">
-                            @if ($mp->is_winner)
-                                <i data-lucide="crown" class="h-5 w-5 text-amber-500"></i>
-                            @endif
-                            <div>
-                                <a href="{{ route('participants.show', $mp->participant) }}" class="text-lg font-semibold hover:text-primary dark:text-white">
-                                    {{ $mp->participant->name ?? 'TBD' }}
-                                </a>
-                                <p class="text-xs text-slate-500">No. {{ $mp->participant->number ?? '-' }}</p>
+                @forelse ($sides as $side => $members)
+                    @php $isWinner = $members->contains(fn ($mp) => $mp->is_winner); @endphp
+                    <div class="rounded-xl border p-4 {{ $isWinner ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700' }}">
+                        <div class="mb-2 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                @if ($isWinner)
+                                    <i data-lucide="crown" class="h-5 w-5 text-amber-500"></i>
+                                @endif
+                                <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    {{ $members->count() > 1 ? 'Tim '.$side : 'Sisi '.$side }}
+                                </span>
                             </div>
+                            <span class="text-3xl font-bold font-mono {{ $isWinner ? 'text-primary' : 'text-secondary dark:text-white' }}">
+                                {{ $members->first()->score ?? '-' }}
+                            </span>
                         </div>
-                        <span class="text-3xl font-bold font-mono {{ $mp->is_winner ? 'text-primary' : 'text-secondary dark:text-white' }}">
-                            {{ $mp->score ?? '-' }}
-                        </span>
+                        <ul class="space-y-1">
+                            @foreach ($members as $mp)
+                                <li>
+                                    <a href="{{ route('participants.show', $mp->participant) }}" class="font-semibold hover:text-primary dark:text-white">
+                                        {{ $mp->participant->name ?? 'TBD' }}
+                                    </a>
+                                    <span class="text-xs text-slate-500">· No. {{ $mp->participant->number ?? '-' }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
                     </div>
-                    @if (!$loop->last)
+                    @if (! $loop->last)
                         <div class="text-center text-sm font-bold text-slate-400">VS</div>
                     @endif
-                @endforeach
-
-                @if ($match->matchParticipants->isEmpty())
+                @empty
                     <p class="py-8 text-center text-slate-500">Peserta belum ditentukan.</p>
-                @endif
+                @endforelse
             </div>
 
             @if ($match->result)
@@ -62,7 +73,6 @@
             @endif
         </x-ui.card>
 
-        {{-- Info sidebar --}}
         <div class="space-y-4">
             <x-ui.card>
                 <h3 class="mb-3 font-semibold text-secondary dark:text-white">Informasi</h3>
@@ -70,6 +80,10 @@
                     <div>
                         <dt class="text-slate-500">Lomba</dt>
                         <dd><a href="{{ route('competitions.show', $match->competition) }}" class="font-medium hover:text-primary">{{ $match->competition->name }}</a></dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-500">Format</dt>
+                        <dd class="font-medium">{{ $match->competition->matchFormatLabel() }}</dd>
                     </div>
                     <div>
                         <dt class="text-slate-500">Babak</dt>
@@ -82,7 +96,13 @@
                     @if ($match->result?->winner)
                         <div>
                             <dt class="text-slate-500">Pemenang</dt>
-                            <dd class="font-medium text-primary">{{ $match->result->winner->name }}</dd>
+                            <dd class="font-medium text-primary">
+                                @php
+                                    $winSide = $match->matchParticipants->firstWhere('is_winner', true)?->side;
+                                    $winners = $match->matchParticipants->where('side', $winSide);
+                                @endphp
+                                {{ $winners->map(fn ($mp) => $mp->participant->name)->filter()->implode(' & ') ?: $match->result->winner->name }}
+                            </dd>
                         </div>
                     @endif
                 </dl>
@@ -95,21 +115,25 @@
         </div>
     </div>
 
-    {{-- Result Modal --}}
     <x-modal name="match-result" focusable>
         <form method="POST" action="{{ route('matches.result', $match) }}" class="p-6">
             @csrf
             <h2 class="text-lg font-semibold text-secondary dark:text-white">Input Hasil Pertandingan</h2>
-            <p class="mt-1 text-sm text-slate-500">Masukkan skor untuk setiap peserta.</p>
+            <p class="mt-1 text-sm text-slate-500">Masukkan skor per sisi / tim.</p>
 
             <div class="mt-6 space-y-4">
-                @foreach ($match->matchParticipants as $mp)
+                @foreach ($sides as $side => $members)
                     <div>
-                        <label class="form-label">{{ $mp->participant->name ?? 'Peserta' }}</label>
+                        <label class="form-label">
+                            {{ $members->count() > 1 ? 'Tim '.$side : 'Sisi '.$side }}
+                            <span class="font-normal text-slate-500">
+                                ({{ $members->map(fn ($mp) => $mp->participant->name)->filter()->implode(', ') }})
+                            </span>
+                        </label>
                         <input
                             type="number"
-                            name="scores[{{ $mp->participant_id }}]"
-                            value="{{ old('scores.'.$mp->participant_id, $mp->score ?? 0) }}"
+                            name="side_scores[{{ $side }}]"
+                            value="{{ old('side_scores.'.$side, $members->first()->score ?? 0) }}"
                             min="0"
                             class="form-input"
                             required
@@ -119,10 +143,12 @@
 
                 <div>
                     <label class="form-label">Pemenang (opsional)</label>
-                    <select name="winner_id" class="form-select">
+                    <select name="winner_side" class="form-select">
                         <option value="">Otomatis (skor tertinggi)</option>
-                        @foreach ($match->matchParticipants as $mp)
-                            <option value="{{ $mp->participant_id }}" @selected(old('winner_id') == $mp->participant_id)>{{ $mp->participant->name }}</option>
+                        @foreach ($sides as $side => $members)
+                            <option value="{{ $side }}" @selected(old('winner_side') == $side)>
+                                {{ $members->map(fn ($mp) => $mp->participant->name)->filter()->implode(' & ') }}
+                            </option>
                         @endforeach
                     </select>
                 </div>

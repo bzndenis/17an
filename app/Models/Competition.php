@@ -84,4 +84,16 @@ class Competition extends Model
     {
         return $query->where('event_id', $eventId);
     }
+
+    public function playersPerSide(): int
+    {
+        return max(1, (int) ($this->config['players_per_side'] ?? 1));
+    }
+
+    public function matchFormatLabel(): string
+    {
+        $n = $this->playersPerSide();
+
+        return $n === 1 ? '1 vs 1' : "{$n} vs {$n} (tim)";
+    }
 }

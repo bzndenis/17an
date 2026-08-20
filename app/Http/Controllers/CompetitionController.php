@@ -45,6 +45,12 @@ class CompetitionController extends Controller
             $data['banner'] = $request->file('banner')->store('competitions', 'public');
         }
 
+        $playersPerSide = max(1, (int) ($data['players_per_side'] ?? 1));
+        unset($data['players_per_side']);
+        $data['config'] = array_merge($data['config'] ?? [], [
+            'players_per_side' => $playersPerSide,
+        ]);
+
         $competition = $this->competitionService->create($data);
 
         return redirect()->route('competitions.wizard', ['competition' => $competition, 'step' => 2])
@@ -74,6 +80,13 @@ class CompetitionController extends Controller
 
         if ($request->hasFile('banner')) {
             $data['banner'] = $request->file('banner')->store('competitions', 'public');
+        }
+
+        if (array_key_exists('players_per_side', $data)) {
+            $data['config'] = array_merge($competition->config ?? [], [
+                'players_per_side' => max(1, (int) $data['players_per_side']),
+            ]);
+            unset($data['players_per_side']);
         }
 
         $this->competitionService->update($competition, $data);
@@ -113,6 +126,7 @@ class CompetitionController extends Controller
                 'participant_ids' => ['required', 'array', 'min:2'],
                 'participant_ids.*' => ['exists:participants,id'],
                 'seeds' => ['nullable', 'array'],
+                'players_per_side' => ['nullable', 'integer', 'min:1', 'max:10'],
                 'group_count' => $competition->system === \App\Enums\CompetitionSystem::GroupKnockout
                     ? ['required', 'integer', 'min:2', 'max:16']
                     : ['nullable'],

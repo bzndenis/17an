@@ -6,6 +6,7 @@
     $isGroupKnockout = $competition->system === CompetitionSystem::GroupKnockout;
     $groupCount = old('group_count', $competition->config['group_count'] ?? 4);
     $qualifyPerGroup = old('qualify_per_group', $competition->config['qualify_per_group'] ?? 2);
+    $playersPerSide = old('players_per_side', $competition->playersPerSide());
 @endphp
 
 <x-app-layout :title="'Wizard - ' . $competition->name">
@@ -87,6 +88,23 @@
             }">
                 @csrf
                 <input type="hidden" name="step" value="2">
+
+                <div class="mb-6 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                    <p class="mb-3 text-sm font-semibold text-secondary dark:text-white">Format Pertandingan</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="players_per_side" class="form-label">Orang per sisi</label>
+                            <select id="players_per_side" name="players_per_side" class="form-select">
+                                @foreach ([1, 2, 3, 4, 5] as $n)
+                                    <option value="{{ $n }}" @selected((int) $playersPerSide === $n)>
+                                        {{ $n === 1 ? '1 vs 1 (perorangan)' : "{$n} vs {$n} (tim lawan tim)" }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-slate-500">Contoh 2 vs 2: tiap pertandingan 2 orang lawan 2 orang.</p>
+                        </div>
+                    </div>
+                </div>
 
                 @if ($isGroupKnockout)
                     <div class="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4">

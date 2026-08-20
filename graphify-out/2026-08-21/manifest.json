@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "app/Http/Controllers/CompetitionController.php": {
-    "mtime": 1787250420.3237426,
-    "ast_hash": "4c5be7b7537ddcd454d426c0be88ecee",
+    "mtime": 1787230554.0860727,
+    "ast_hash": "8d669263abb14a0c7f7613907efa8d0c",
     "semantic_hash": ""
   },
   "app/Http/Controllers/Controller.php": {
@@ -105,9 +105,9 @@
     "semantic_hash": "3d032891eb1fafcfab400f5e867d51de"
   },
   "app/Http/Controllers/MatchController.php": {
-    "mtime": 1787250425.1647308,
-    "ast_hash": "4914478595282b7b528a2617c75e5a5c",
-    "semantic_hash": ""
+    "mtime": 1787229778.0674942,
+    "ast_hash": "f596ec972722fb674d27de63cee72ff9",
+    "semantic_hash": "f596ec972722fb674d27de63cee72ff9"
   },
   "app/Http/Controllers/ParticipantController.php": {
     "mtime": 1787229778.0676746,
@@ -150,9 +150,9 @@
     "semantic_hash": "80a73e67db650b32485bc84687e5b634"
   },
   "app/Http/Requests/StoreCompetitionRequest.php": {
-    "mtime": 1787250404.4779549,
-    "ast_hash": "8ac594fc9363fa71c394f3ff5d5533f7",
-    "semantic_hash": ""
+    "mtime": 1787229778.0688329,
+    "ast_hash": "76ad170a8877b4f45829e67626f8c9c2",
+    "semantic_hash": "76ad170a8877b4f45829e67626f8c9c2"
   },
   "app/Http/Requests/StoreParticipantRequest.php": {
     "mtime": 1787229778.068926,
@@ -160,9 +160,9 @@
     "semantic_hash": "aef3430a18faff2c28db4aaeea4b17ab"
   },
   "app/Http/Requests/UpdateCompetitionRequest.php": {
-    "mtime": 1787250408.0960271,
-    "ast_hash": "646e5a8911a9000a8eaae78c3504c891",
-    "semantic_hash": ""
+    "mtime": 1787229778.0690062,
+    "ast_hash": "06816090007f004f194b1c02e46f3aa2",
+    "semantic_hash": "06816090007f004f194b1c02e46f3aa2"
   },
   "app/Http/Requests/UpdateParticipantRequest.php": {
     "mtime": 1787229778.069108,
@@ -190,8 +190,8 @@
     "semantic_hash": "e965987880b1d9c2e3ee3c0caf6f45a6"
   },
   "app/Models/Competition.php": {
-    "mtime": 1787250233.0282185,
-    "ast_hash": "18fdd4e2a153b08bfc8c78b94d7525d4",
+    "mtime": 1787230430.1068609,
+    "ast_hash": "1f241149db6562f03ebe5f123447fc4f",
     "semantic_hash": ""
   },
   "app/Models/CompetitionParticipant.php": {
@@ -215,9 +215,9 @@
     "semantic_hash": "f5a260de3197d35c94bfef8873603728"
   },
   "app/Models/MatchParticipant.php": {
-    "mtime": 1787250233.0283556,
-    "ast_hash": "8f3049c4f6ccd2fd85599424a6aa47df",
-    "semantic_hash": ""
+    "mtime": 1787229778.0700974,
+    "ast_hash": "563226b79ba2c72065d9e90f758da16e",
+    "semantic_hash": "563226b79ba2c72065d9e90f758da16e"
   },
   "app/Models/MatchResult.php": {
     "mtime": 1787229778.0701742,
@@ -265,13 +265,13 @@
     "semantic_hash": "b788343234e71ed18f7192385c8576fc"
   },
   "app/Services/BracketService.php": {
-    "mtime": 1787250389.4881241,
-    "ast_hash": "336a1dfabc1ff3695c29a6d608db3196",
+    "mtime": 1787230530.7354941,
+    "ast_hash": "7876c23152198d4e46a440fa78c58040",
     "semantic_hash": ""
   },
   "app/Services/CompetitionService.php": {
-    "mtime": 1787250425.1648276,
-    "ast_hash": "aea537176e1726a32463dde9f2dfe68b",
+    "mtime": 1787230534.0805182,
+    "ast_hash": "39edd2ec85ed42ccf6575b87f16b65a7",
     "semantic_hash": ""
   },
   "app/Services/DashboardService.php": {
@@ -285,8 +285,8 @@
     "semantic_hash": "a2e1f9e1bdc396a375b0fff1aae97712"
   },
   "app/Services/MatchService.php": {
-    "mtime": 1787250397.5077107,
-    "ast_hash": "6fdc690086644220720431bb45df794b",
+    "mtime": 1787230524.782537,
+    "ast_hash": "6b5c3dced9d3b76e86cf745ab9b370c3",
     "semantic_hash": ""
   },
   "app/Services/ParticipantService.php": {
@@ -295,9 +295,9 @@
     "semantic_hash": "04883e14a9b9394056ab5861dccfdb30"
   },
   "app/Services/PointSystemService.php": {
-    "mtime": 1787250397.765336,
-    "ast_hash": "53b5fc952669356c53b75d485d477545",
-    "semantic_hash": ""
+    "mtime": 1787229778.0719965,
+    "ast_hash": "6793f5a4ec3cf7d0cbce899330faf60b",
+    "semantic_hash": "6793f5a4ec3cf7d0cbce899330faf60b"
   },
   "app/Services/RankingService.php": {
     "mtime": 1787229778.0720863,
@@ -630,9 +630,9 @@
     "semantic_hash": "458580626b22bab3fd2d61e070501c3c"
   },
   "resources/views/brackets/partials/match-card.blade.php": {
-    "mtime": 1787250471.3407006,
-    "ast_hash": "19b694a59b5edbd1ca56df42659bad45",
-    "semantic_hash": ""
+    "mtime": 1787229778.0817254,
+    "ast_hash": "780710ee8b468b8c1dea3fa1f42842f1",
+    "semantic_hash": "780710ee8b468b8c1dea3fa1f42842f1"
   },
   "resources/views/brackets/partials/point-system.blade.php": {
     "mtime": 1787230675.6286817,
@@ -650,14 +650,14 @@
     "semantic_hash": ""
   },
   "resources/views/competitions/create.blade.php": {
-    "mtime": 1787250436.4169724,
-    "ast_hash": "4742117bebae1986ee09fe3f1ef6cbc3",
-    "semantic_hash": ""
+    "mtime": 1787229778.0823905,
+    "ast_hash": "07a443dba4768e6f29bc25a727a7ceac",
+    "semantic_hash": "07a443dba4768e6f29bc25a727a7ceac"
   },
   "resources/views/competitions/edit.blade.php": {
-    "mtime": 1787250438.1085737,
-    "ast_hash": "ffdcc3385d5d839d84e6df125768b189",
-    "semantic_hash": ""
+    "mtime": 1787229778.082547,
+    "ast_hash": "7a7b01185b3cb1b90fd51b57d26af3ac",
+    "semantic_hash": "7a7b01185b3cb1b90fd51b57d26af3ac"
   },
   "resources/views/competitions/index.blade.php": {
     "mtime": 1787229778.0827062,
@@ -665,13 +665,13 @@
     "semantic_hash": "35fb82512478c33ede17b2596eebaebd"
   },
   "resources/views/competitions/show.blade.php": {
-    "mtime": 1787250481.4582953,
-    "ast_hash": "394808bfa9b3d06004eefeb6fc4c8440",
+    "mtime": 1787230675.7446856,
+    "ast_hash": "450c59ece1db9b387eb141337deca10a",
     "semantic_hash": ""
   },
   "resources/views/competitions/wizard.blade.php": {
-    "mtime": 1787250450.2611039,
-    "ast_hash": "a60d9da46664ca7dc3cc739e54759e3c",
+    "mtime": 1787230809.5270827,
+    "ast_hash": "ede9616c93194ff9796bd6fe42bf2b9c",
     "semantic_hash": ""
   },
   "resources/views/components/application-logo.blade.php": {
@@ -840,9 +840,9 @@
     "semantic_hash": "da4fd35357a68ba860295d70b7093220"
   },
   "resources/views/matches/show.blade.php": {
-    "mtime": 1787250471.3404953,
-    "ast_hash": "05d4c70dc8ed69b4685b221fdf639066",
-    "semantic_hash": ""
+    "mtime": 1787229778.0864885,
+    "ast_hash": "467fa3449ea001871f0789e02f6f967e",
+    "semantic_hash": "467fa3449ea001871f0789e02f6f967e"
   },
   "resources/views/participants/create.blade.php": {
     "mtime": 1787229778.0866704,
@@ -1082,11 +1082,6 @@
   "screenshots/08-jadwal.png": {
     "mtime": 1787229778.093062,
     "ast_hash": "cae2001b380558249c50818528eff0a8",
-    "semantic_hash": ""
-  },
-  "database/migrations/2026_08_20_182331_add_side_to_match_participants_table.php": {
-    "mtime": 1787250232.9557106,
-    "ast_hash": "12d9e620025ab2134281e56c2c66e607",
     "semantic_hash": ""
   }
 }
